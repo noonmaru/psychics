@@ -1,4 +1,5 @@
   name: $pluginName
-  main: $pluginGroup.$pluginMain
+  main: $pluginMain
   depend: [Kotlin]
+  api-version: '1.15'
   version: $pluginVersion
