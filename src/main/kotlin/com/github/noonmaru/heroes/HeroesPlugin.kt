@@ -3,7 +3,7 @@ package com.github.noonmaru.heroes
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
- * @author Nemo
+ * @author Noonmaru
  */
 class HeroesPlugin : JavaPlugin() {
     override fun onEnable() {
