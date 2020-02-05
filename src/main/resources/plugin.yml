@@ -1,5 +1,5 @@
   name: $pluginName
   main: $pluginMain
-  depend: [Kotlin]
+  depend: [Kotlin, Tap]
   api-version: '1.15'
   version: $pluginVersion
