@@ -16,4 +16,34 @@
 
 package com.github.noonmaru.heroes.psychic
 
-class Ability
+import com.github.noonmaru.tap.config.Config
+
+class Ability {
+
+    @Config
+    var type: Type = Type.PASSIVE
+
+    @Config
+    var cooldown: Int = 0
+
+    @Config
+    var cost: Int = 0
+
+    @Config
+    var castTime: Int = 0
+
+    @Config
+    var range: Double = 0.0
+
+    @Config
+    var description: List<String> = emptyList()
+
+    enum class Type {
+        MOVEMENT,
+        CASTING,
+        SPELL,
+        PASSIVE
+    }
+
+
+}

@@ -16,6 +16,7 @@
 
 package com.github.noonmaru.heroes.loader
 
+import java.net.URL
 import java.net.URLClassLoader
 
-class SkillClassLoader : URLClassLoader
+class SkillClassLoader(urls: Array<out URL>?, parent: ClassLoader?) : URLClassLoader(urls, parent)

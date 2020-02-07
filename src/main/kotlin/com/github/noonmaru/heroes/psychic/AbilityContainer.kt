@@ -14,15 +14,6 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes
+package com.github.noonmaru.heroes.psychic
 
-import org.bukkit.plugin.java.JavaPlugin
-
-/**
- * @author Noonmaru
- */
-class HeroesPlugin : JavaPlugin() {
-    override fun onEnable() {
-        logger.info("HEROES ASSEMBLE!")
-    }
-}
+class AbilityContainer
