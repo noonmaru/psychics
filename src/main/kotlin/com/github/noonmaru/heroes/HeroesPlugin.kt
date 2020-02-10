@@ -22,7 +22,21 @@ import org.bukkit.plugin.java.JavaPlugin
  * @author Noonmaru
  */
 class HeroesPlugin : JavaPlugin() {
+
+    companion object {
+        @JvmStatic
+        lateinit var instance: HeroesPlugin
+            private set
+    }
+
     override fun onEnable() {
+        instance = this
+        Heroes.initialize(this)
+
         logger.info("HEROES ASSEMBLE!")
+
     }
 }
+
+val HeroesLogger
+    get() = HeroesPlugin.instance.logger

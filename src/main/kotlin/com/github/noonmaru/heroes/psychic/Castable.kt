@@ -16,6 +16,34 @@
 
 package com.github.noonmaru.heroes.psychic
 
+import org.bukkit.FluidCollisionMode
+import org.bukkit.entity.Entity
+import org.bukkit.util.RayTraceResult
+
 interface Castable {
-    fun onCast()
+    fun onCast(heroAbility: HeroAbility): Boolean
+}
+
+interface TargetCastable : Castable {
+
+    var range: Double
+
+    var raySize: Double
+
+    var filter: (Entity) -> Boolean
+
+    override fun onCast(heroAbility: HeroAbility): Boolean {
+        val player = heroAbility.hero.player
+        val world = player.world
+
+        val start = player.eyeLocation
+        val direction = start.direction
+
+        return world.rayTrace(start, direction, range, FluidCollisionMode.NEVER, true, raySize, filter)?.let { result ->
+            onCast(heroAbility, result)
+        } ?: false
+    }
+
+    fun onCast(heroAbility: HeroAbility, result: RayTraceResult): Boolean
+
 }

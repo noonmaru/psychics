@@ -14,9 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.loader
+package com.github.noonmaru.heroes.utils
 
-import java.net.URL
-import java.net.URLClassLoader
+private val INIT_NANO_TIME = System.nanoTime()
 
-class SkillClassLoader(urls: Array<out URL>?, parent: ClassLoader?) : URLClassLoader(urls, parent)
+fun currentTicks(): Int {
+    return ((System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)).toInt()
+}

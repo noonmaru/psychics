@@ -16,4 +16,12 @@
 
 package com.github.noonmaru.heroes.psychic
 
-class AbilityContainer
+import java.io.File
+
+class AbilityStatement internal constructor(
+    val file: File,
+    val description: AbilityDescription,
+    val classLoader: ClassLoader,
+    val abilityClass: Class<out Ability<*>>,
+    val isCastable: Boolean = Castable::class.java.isAssignableFrom(abilityClass)
+)

@@ -16,4 +16,14 @@
 
 package com.github.noonmaru.heroes.psychic
 
-class Hero
+import com.google.common.base.Preconditions
+import org.bukkit.entity.Player
+
+class Hero(val player: Player) {
+
+    var valid: Boolean = true
+
+    fun checkState() {
+        Preconditions.checkState(valid, "Invalid $javaClass @${System.identityHashCode(this).toString(0x10)}")
+    }
+}

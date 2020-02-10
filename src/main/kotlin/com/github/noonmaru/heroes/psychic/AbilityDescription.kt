@@ -29,8 +29,6 @@ class AbilityDescription(config: ConfigurationSection) {
 
     val version: String = config.findString("version")
 
-    val heroesVersion: String? = config.getString("heroes-version")
-
     val description: String? = config.getString("description")
 
     val authors: List<String> = config.findList("authors")
