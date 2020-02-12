@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.loader
+package com.github.noonmaru.psychic.loader
 
-import com.github.noonmaru.heroes.psychic.Ability
-import com.github.noonmaru.heroes.psychic.AbilityDescription
-import com.github.noonmaru.heroes.psychic.AbilityStatement
+import com.github.noonmaru.psychic.AbilityDescription
+import com.github.noonmaru.psychic.AbilityModel
+import com.github.noonmaru.psychic.AbilitySpec
 import com.google.common.base.Preconditions
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -34,21 +34,22 @@ class AbilityLoader internal constructor() {
     private val loaders: MutableMap<File, AbilityClassLoader> = ConcurrentHashMap()
 
     @Throws(Throwable::class)
-    internal fun load(file: File): AbilityStatement {
+    internal fun load(file: File): AbilityModel {
         Preconditions.checkArgument(file !in loaders, "Already registered file ${file.name}")
 
         val desc = file.getAbilityDescription()
         AbilityClassLoader(javaClass.classLoader, this, file).use { classLoader ->
             //임시 클래스로더 생성 (메인 클래스를 못 찾을 경우 폐기)
-            val abilityClass = Class.forName(desc.main).asSubclass(Ability::class.java) //메인 클래스 찾기
-            abilityClass.newInstance() // 인스턴스 생성 테스트
+            val specClass = Class.forName(desc.main).asSubclass(AbilitySpec::class.java) //메인 클래스 찾기
+            val spec = test(specClass, "Failed to create AbilitySpec '$specClass'") // AbilitySpec 인스턴스 생성 테스트
+            spec.abilityClass.let { test(it, "Failed to create Ability '$it") }// Ability 인스턴스 생성 테스트
             loaders[file] = classLoader // 글로벌 클래스 로더 등록
-            return AbilityStatement(file, desc, classLoader, abilityClass)
+            return AbilityModel(file, desc, classLoader, specClass)
         }
     }
 
     @Throws(ClassNotFoundException::class)
-    fun findClass(name: String, skip: AbilityClassLoader): Class<*> {
+    internal fun findClass(name: String, skip: AbilityClassLoader): Class<*> {
         var found = classes[name]
 
         if (found != null) return found
@@ -66,6 +67,14 @@ class AbilityLoader internal constructor() {
         }
 
         throw ClassNotFoundException(name)
+    }
+}
+
+private fun <T> test(clazz: Class<T>, msg: String): T {
+    try {
+        return clazz.newInstance()
+    } catch (e: Exception) {
+        throw IllegalArgumentException(msg)
     }
 }
 

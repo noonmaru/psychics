@@ -14,14 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.psychic
+package com.github.noonmaru.psychic.utils
 
-import java.io.File
+import org.bukkit.configuration.ConfigurationSection
 
-class AbilityStatement internal constructor(
-    val file: File,
-    val description: AbilityDescription,
-    val classLoader: ClassLoader,
-    val abilityClass: Class<out Ability<*>>,
-    val isCastable: Boolean = Castable::class.java.isAssignableFrom(abilityClass)
-)
+internal fun ConfigurationSection.findString(path: String): String {
+    return getString(path) ?: throw NullPointerException("Undefined $path")
+}

@@ -14,29 +14,47 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes
+package com.github.noonmaru.psychic.plugin
 
+import com.github.noonmaru.psychic.Psychics
+import com.github.noonmaru.psychic.cmd.CommandApply
+import com.github.noonmaru.tap.command.CommandManager
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * @author Noonmaru
  */
-class HeroesPlugin : JavaPlugin() {
+class PsychicPlugin : JavaPlugin() {
 
     companion object {
         @JvmStatic
-        lateinit var instance: HeroesPlugin
+        lateinit var instance: PsychicPlugin
             private set
     }
 
     override fun onEnable() {
         instance = this
-        Heroes.initialize(this)
+
+        Psychics.initialize(this)
+
+
 
         logger.info("HEROES ASSEMBLE!")
 
+
+    }
+
+    private fun setupCommands() {
+        CommandManager().apply {
+            addCommand("apply", CommandApply()).apply {
+                usage = "[Player] <Psychic>"
+                description = "능력을 적용합니다."
+            }
+        }.let { command ->
+            getCommand("psychic")?.apply {
+                setExecutor(command)
+                tabCompleter = command
+            }
+        }
     }
 }
-
-val HeroesLogger
-    get() = HeroesPlugin.instance.logger

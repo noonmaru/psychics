@@ -14,14 +14,14 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.loader
+package com.github.noonmaru.psychic.loader
 
 import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
 
-class AbilityClassLoader(
+internal class AbilityClassLoader(
     parent: ClassLoader,
     private val loader: AbilityLoader,
     file: File

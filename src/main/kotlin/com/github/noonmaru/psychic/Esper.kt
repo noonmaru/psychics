@@ -14,4 +14,27 @@
  *  limitations under the License.
  */
 
-rootProject.name = 'psychic'
+package com.github.noonmaru.psychic
+
+import org.bukkit.entity.Player
+
+class Esper(val player: Player) {
+
+    var psychic: Psychic? = null
+        private set
+
+    var valid = false
+
+    fun applyPsychic(psychicSpec: PsychicSpec?) {
+        this.psychic?.unregister()
+
+        psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
+    }
+
+    internal fun destroy() {
+        valid = false
+
+        psychic?.destroy()
+    }
+
+}

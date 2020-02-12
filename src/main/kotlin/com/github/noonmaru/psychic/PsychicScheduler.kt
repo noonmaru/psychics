@@ -14,10 +14,13 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.utils
+package com.github.noonmaru.psychic
 
-private val INIT_NANO_TIME = System.nanoTime()
+class PsychicScheduler internal constructor(val esperManager: EsperManager) : Runnable {
 
-fun currentTicks(): Int {
-    return ((System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)).toInt()
+    override fun run() {
+        for (esper in esperManager.getEspers()) {
+            esper.psychic?.update()
+        }
+    }
 }

@@ -14,16 +14,12 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.heroes.psychic
+package com.github.noonmaru.psychic.utils
 
-import com.google.common.base.Preconditions
-import org.bukkit.entity.Player
+private val INIT_NANO_TIME = System.nanoTime()
 
-class Hero(val player: Player) {
-
-    var valid: Boolean = true
-
-    fun checkState() {
-        Preconditions.checkState(valid, "Invalid $javaClass @${System.identityHashCode(this).toString(0x10)}")
+val currentTicks: Int
+    get() {
+        return ((System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)).toInt()
     }
-}
+
