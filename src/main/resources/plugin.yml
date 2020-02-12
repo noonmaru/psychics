@@ -1,5 +1,10 @@
-  name: $pluginName
-  main: $pluginMain
-  depend: [Kotlin, Tap]
-  api-version: '1.13'
-  version: $pluginVersion
+name: $pluginName
+main: $pluginMain
+depend: [Kotlin, Tap]
+api-version: '1.13'
+version: $pluginVersion
+commands:
+  psychic:
+    aliases: ['pch']
+    usage: /<command> help
+    permission: 'psychic.commands'
