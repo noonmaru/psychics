@@ -36,12 +36,9 @@ class PsychicPlugin : JavaPlugin() {
         instance = this
 
         Psychics.initialize(this)
-
-
+        setupCommands()
 
         logger.info("HEROES ASSEMBLE!")
-
-
     }
 
     private fun setupCommands() {
