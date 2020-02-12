@@ -34,7 +34,7 @@ class Esper(val player: Player) {
     internal fun destroy() {
         valid = false
 
-        psychic?.destroy()
+        psychic?.unregister()
     }
 
 }

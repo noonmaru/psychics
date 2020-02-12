@@ -44,7 +44,7 @@ object Psychics {
 
         storage = PsychicStorage(File(dir, "abilities"), File(dir, "psychics"))
         esperManager = EsperManager(plugin, File(dir, "espers"))
-        plugin.server.scheduler.runTaskTimer(plugin, PsychicScheduler(Psychics.esperManager), 0L, 1L)
+        plugin.server.scheduler.runTaskTimer(plugin, Scheduler(Psychics.esperManager), 0L, 1L)
     }
 }
 

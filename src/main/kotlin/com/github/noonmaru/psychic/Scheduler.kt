@@ -16,7 +16,7 @@
 
 package com.github.noonmaru.psychic
 
-class PsychicScheduler internal constructor(val esperManager: EsperManager) : Runnable {
+class Scheduler internal constructor(val esperManager: EsperManager) : Runnable {
 
     override fun run() {
         for (esper in esperManager.getEspers()) {
