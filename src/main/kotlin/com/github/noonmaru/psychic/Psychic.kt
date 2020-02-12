@@ -24,6 +24,7 @@ import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
@@ -36,6 +37,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
@@ -178,8 +180,15 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         scheduler.runTaskTimer(runnable, delay, period)
     }
 
-    fun launch(projectile: Projectile) {
+    fun launch(projectile: Projectile, spawn: Location, vector: Vector) {
         checkState()
+
+        projectile.apply {
+            this.prevLoc = spawn.clone()
+            this.loc = spawn.clone()
+            this.toLoc = spawn.clone()
+            this.vector = vector.clone()
+        }
 
         projectiles.add(projectile)
     }
@@ -270,6 +279,7 @@ class PsychicSpec(specFile: File) {
                         list += abilityModel.specClass.newInstance().apply {
                             model = abilityModel
                             psychicSpec = this@PsychicSpec
+                            description = abilityModel.description.description
                             if (applyConfig(value))
                                 absent = true
                             onInitialize()

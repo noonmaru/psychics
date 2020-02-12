@@ -21,15 +21,19 @@ import org.bukkit.Location
 import org.bukkit.util.RayTraceResult
 import org.bukkit.util.Vector
 
-open class Projectile(spawnLoc: Location, move: Vector) {
+open class Projectile {
 
-    val prevLoc: Location = spawnLoc.clone()
+    lateinit var prevLoc: Location
+        internal set
 
-    val loc: Location = spawnLoc.clone()
+    lateinit var loc: Location
+        internal set
 
-    val toLoc: Location = spawnLoc.clone()
+    lateinit var toLoc: Location
+        internal set
 
-    val vector: Vector = move.clone()
+    lateinit var vector: Vector
+        internal set
 
     var rayTracer: ((Location, Vector) -> RayTraceResult?)? = null
 

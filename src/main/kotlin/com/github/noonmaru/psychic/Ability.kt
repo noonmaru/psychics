@@ -105,8 +105,8 @@ abstract class AbilitySpec {
         }
 
     @Config
-    var description: List<String> = ImmutableList.of("설명이 없습니다.")
-        protected set
+    lateinit var description: List<String>
+        internal set
 
     abstract val abilityClass: Class<out Ability>
 
