@@ -32,6 +32,11 @@ class EsperManager internal constructor(plugin: PsychicPlugin, private val dir: 
     private val espers = IdentityHashMap<Player, Esper>(Bukkit.getMaxPlayers())
 
     init {
+
+        for (player in Bukkit.getOnlinePlayers()) {
+            espers[player] = Esper(player)
+        }
+
         plugin.server.pluginManager.registerEvents(object : Listener {
             @EventHandler(priority = EventPriority.LOWEST)
             fun onJoin(event: PlayerJoinEvent) {

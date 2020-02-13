@@ -62,4 +62,10 @@ class PsychicPlugin : JavaPlugin() {
             }
         }
     }
+
+    override fun onDisable() {
+        for (esper in Psychics.esperManager.getEspers()) {
+            esper.destroy()
+        }
+    }
 }

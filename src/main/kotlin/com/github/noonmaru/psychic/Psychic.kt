@@ -190,7 +190,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         projectile.apply {
             this.prevLoc = spawn.clone()
             this.loc = spawn.clone()
-            this.toLoc = spawn.clone()
+            this.toLoc = spawn.clone().add(vector)
             this.vector = vector.clone()
         }
 
@@ -210,9 +210,9 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         channeling?.run {
 
             val current = currentTicks
-            val remain = current - channelTick
+            val remain = max(0, channelTick - current)
 
-            castingBar.progress = remain.toDouble() / ability.spec.channelDuration
+            castingBar.progress = 1.0 - remain.toDouble() / ability.spec.channelDuration
 
             if (remain <= 0) {
                 castingBar.setTitle(null)

@@ -67,7 +67,7 @@ open class Projectile {
                     z /= length
                 }
 
-                invoke(loc, vector, length)?.let { result ->
+                invoke(loc.clone(), vector, length)?.let { result ->
                     rayTraceResult = result
                     val v = result.hitPosition
                     toLoc.set(v.x, v.y, v.z)

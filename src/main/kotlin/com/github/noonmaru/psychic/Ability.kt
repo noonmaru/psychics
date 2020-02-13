@@ -119,6 +119,10 @@ abstract class AbilitySpec {
     ) {
         this.model = model
         this.psychicSpec = psychicSpec
+
+        if (CastableAbility::class.java.isAssignableFrom(abilityClass))
+            type = AbilityType.CASTING
+
         model.description.let {
             if (!this::displayName.isInitialized)
                 displayName = it.name
