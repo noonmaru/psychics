@@ -53,6 +53,9 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     private val manaBar: BossBar?
 
+    private val castingBar =
+        Bukkit.createBossBar("casting-bar", BarColor.WHITE, BarStyle.SOLID).apply { isVisible = false }
+
     val abilities: List<Ability>
 
     internal var channeling: Channel? = null
@@ -95,7 +98,6 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         }
 
         manaBar = if (spec.mana > 0) Bukkit.createBossBar("Mana", BarColor.BLUE, BarStyle.SOLID) else null
-
     }
 
     internal fun register(esper: Esper) {
@@ -105,6 +107,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         this.valid = true
         this.prevRegenManaTick = currentTicks
         this.manaBar?.addPlayer(esper.player)
+        this.castingBar.addPlayer(esper.player)
 
         registerPlayerEvents(WandListener())
 
@@ -202,15 +205,19 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         scheduler.run()
         projectiles.updateAll()
 
-        val current = currentTicks
-
         channeling?.run {
-            if (castTick <= currentTicks) {
+
+            val current = currentTicks
+            val remain = current - channelTick
+
+            castingBar.progress = remain.toDouble() / ability.spec.channelDuration
+
+            if (remain <= 0) {
+                castingBar.isVisible = false
                 channeling = null
                 cast()
             }
         }
-
 
         if (this.prevMana != this.mana) {
             this.prevMana = this.mana
@@ -239,10 +246,14 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     internal fun startChannel(ability: CastableAbility, ticks: Int, vararg args: Any) {
         channeling = Channel(ability, ticks, args)
+        castingBar.setTitle(ability.spec.displayName)
+        castingBar.progress = 0.0
+        castingBar.isVisible = true
     }
 
     internal fun stopChannel(): Channel? {
         return channeling?.run {
+            interrupt()
             channeling = null
             this
         }
@@ -250,13 +261,17 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     inner class Channel(val ability: CastableAbility, ticks: Int, vararg val args: Any) {
 
-        internal val castTick = currentTicks + ticks
+        internal val channelTick = currentTicks + ticks
 
         val remainTicks
-            get() = max(castTick - currentTicks, 0)
+            get() = max(channelTick - currentTicks, 0)
 
         internal fun cast() {
-            kotlin.runCatching { ability.onCast(args) }
+            runCatching { ability.onCast(args) }
+        }
+
+        internal fun interrupt() {
+            runCatching { ability.onInterrupt(args) }
         }
     }
 }
@@ -291,9 +306,7 @@ class PsychicSpec(storage: PsychicStorage, specFile: File) {
                 if (value is ConfigurationSection) {
                     storage.abilityModels[abilityName]?.let { abilityModel ->
                         list += abilityModel.specClass.newInstance().apply {
-                            model = abilityModel
-                            psychicSpec = this@PsychicSpec
-                            description = abilityModel.description.description
+                            initialize(model, this@PsychicSpec)
                             if (applyConfig(value, true)) {
                                 absent = true
                             }

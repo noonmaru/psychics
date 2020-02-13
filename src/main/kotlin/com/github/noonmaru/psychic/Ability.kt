@@ -63,8 +63,12 @@ class AbilityModel internal constructor(
 abstract class AbilitySpec {
 
     lateinit var model: AbilityModel
+        private set
 
     lateinit var psychicSpec: PsychicSpec
+
+    @Config
+    lateinit var displayName: String
 
     @Config
     var type: AbilityType = AbilityType.PASSIVE
@@ -108,6 +112,19 @@ abstract class AbilitySpec {
         internal set
 
     abstract val abilityClass: Class<out Ability>
+
+    internal fun initialize(
+        model: AbilityModel,
+        psychicSpec: PsychicSpec
+    ) {
+        this.model = model
+        this.psychicSpec = psychicSpec
+        model.description.let {
+            if (!this::displayName.isInitialized)
+                displayName = it.name
+            description = it.description
+        }
+    }
 
     fun onInitialize() {}
 }
@@ -196,5 +213,8 @@ abstract class CastableAbility : Ability() {
     }
 
     abstract fun onCast(vararg args: Any)
+
+    open fun onInterrupt(args: Array<out Any>) {}
+
 }
 
