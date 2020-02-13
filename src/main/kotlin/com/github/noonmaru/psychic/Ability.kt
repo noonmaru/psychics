@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 import java.io.File
-import kotlin.math.max
 
 /**
  * Ability.jar의 정보를 기술하는 클래스입니다.
@@ -139,9 +138,6 @@ abstract class Ability {
             field = currentTicks + value.coerceIn(0, Int.MAX_VALUE)
         }
 
-    var enabled: Boolean = false
-        private set
-
     lateinit var esper: Esper
 
     open fun onInitialize() {}
@@ -153,7 +149,7 @@ abstract class Ability {
     open fun onDisable() {}
 
     open fun test(): Boolean {
-        return enabled && cooldown == 0 && psychic.mana >= spec.cost
+        return psychic.enabled && cooldown == 0 && psychic.mana >= spec.cost
     }
 
     fun checkState() {
@@ -164,16 +160,14 @@ abstract class Ability {
 
 abstract class CastableAbility : Ability() {
 
-    var channel: Channel? = null
-        private set
-
     var argsSupplier: (() -> Array<Any>?)? = null
 
     override fun test(): Boolean {
-        return channel == null && super.test()
+        return psychic.channeling == null && super.test()
     }
 
     open fun tryCast(): Boolean {
+
         if (test()) {
             val supplier = argsSupplier
 
@@ -194,38 +188,13 @@ abstract class CastableAbility : Ability() {
     protected fun cast(channelTicks: Int, vararg args: Any) {
         checkState()
 
-        channel?.cancel()
-
         if (channelTicks > 0) {
-            channel = Channel(channelTicks, args)
-            psychic.startChannel(Channel(channelTicks, args))
+            psychic.startChannel(this, channelTicks, args)
         } else {
             onCast(args)
         }
     }
 
     abstract fun onCast(vararg args: Any)
-
-    inner class Channel(ticks: Int, vararg val args: Any) : Comparable<Channel> {
-
-        internal val castTick = currentTicks + ticks
-
-        val remainTicks
-            get() = max(castTick - currentTicks, 0)
-
-        private var valid: Boolean = true
-
-        internal fun cast() {
-            onCast(args)
-        }
-
-        internal fun cancel() {
-            valid = false
-        }
-
-        override fun compareTo(other: Channel): Int {
-            return castTick.compareTo(other.castTick)
-        }
-    }
 }
 

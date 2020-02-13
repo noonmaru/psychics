@@ -38,13 +38,17 @@ class AbilityLoader internal constructor() {
         Preconditions.checkArgument(file !in loaders, "Already registered file ${file.name}")
 
         val desc = file.getAbilityDescription()
-        AbilityClassLoader(javaClass.classLoader, this, file).use { classLoader ->
-            //임시 클래스로더 생성 (메인 클래스를 못 찾을 경우 폐기)
-            val specClass = Class.forName(desc.main).asSubclass(AbilitySpec::class.java) //메인 클래스 찾기
+        val classLoader = AbilityClassLoader(javaClass.classLoader, this, file)
+
+        try {
+            val specClass = Class.forName(desc.main, true, classLoader).asSubclass(AbilitySpec::class.java) //메인 클래스 찾기
             val spec = test(specClass, "Failed to create AbilitySpec '$specClass'") // AbilitySpec 인스턴스 생성 테스트
             spec.abilityClass.let { test(it, "Failed to create Ability '$it") }// Ability 인스턴스 생성 테스트
             loaders[file] = classLoader // 글로벌 클래스 로더 등록
             return AbilityModel(file, desc, classLoader, specClass)
+        } catch (e: Exception) {
+            classLoader.close()
+            throw e
         }
     }
 

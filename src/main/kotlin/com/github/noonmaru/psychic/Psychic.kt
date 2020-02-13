@@ -18,7 +18,6 @@ package com.github.noonmaru.psychic
 
 import com.github.noonmaru.psychic.task.PsychicScheduler
 import com.github.noonmaru.psychic.utils.currentTicks
-import com.github.noonmaru.psychic.utils.findString
 import com.github.noonmaru.tap.config.applyConfig
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.google.common.base.Preconditions
@@ -39,8 +38,6 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import java.io.File
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,13 +47,15 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     var mana: Double = 0.0
 
-    var manaRegenPerTick: Double = spec.manaRegenPerSec / 50.0
+    var manaRegenPerTick: Double = spec.manaRegenPerSec / 20.0
 
     var prevRegenManaTick: Int = 0
 
     private val manaBar: BossBar?
 
     val abilities: List<Ability>
+
+    internal var channeling: Channel? = null
 
     private val scheduler = PsychicScheduler()
 
@@ -86,8 +85,8 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             val list = ArrayList<Ability>()
             for (abilitySpec in it) {
                 list += abilitySpec.abilityClass.newInstance().apply {
-                    spec = spec
-                    psychic = psychic
+                    this.spec = abilitySpec
+                    this.psychic = this@Psychic
                     onInitialize()
                 }
             }
@@ -95,17 +94,17 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             ImmutableList.copyOf(list)
         }
 
-        manaBar = if (spec.mana > 0) Bukkit.createBossBar("MANA", BarColor.BLUE, BarStyle.SOLID) else null
+        manaBar = if (spec.mana > 0) Bukkit.createBossBar("Mana", BarColor.BLUE, BarStyle.SOLID) else null
 
     }
 
     internal fun register(esper: Esper) {
-        checkState()
         Preconditions.checkState(!this::esper.isInitialized, "Already registered $this")
 
         this.esper = esper
         this.valid = true
         this.prevRegenManaTick = currentTicks
+        this.manaBar?.addPlayer(esper.player)
 
         registerPlayerEvents(WandListener())
 
@@ -204,21 +203,18 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         projectiles.updateAll()
 
         val current = currentTicks
-        val queue = channelQueue
 
-        while (queue.isNotEmpty()) {
-            val channel = queue.peek()
-
-            if (current < channel.castTick)
-                break
-
-            queue.remove()
-            channel.cast()
+        channeling?.run {
+            if (castTick <= currentTicks) {
+                channeling = null
+                cast()
+            }
         }
+
 
         if (this.prevMana != this.mana) {
             this.prevMana = this.mana
-            TODO("Mana update")
+            manaBar?.progress = this.mana / this.spec.mana
         }
     }
 
@@ -227,6 +223,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
             val current = currentTicks
             val elapsed = current - prevRegenManaTick
+            prevRegenManaTick = current
 
             val max = spec.mana
             if (mana < max) {
@@ -240,15 +237,32 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         }
     }
 
-    private val channelQueue = PriorityQueue<CastableAbility.Channel>()
+    internal fun startChannel(ability: CastableAbility, ticks: Int, vararg args: Any) {
+        channeling = Channel(ability, ticks, args)
+    }
 
-    internal fun startChannel(channel: CastableAbility.Channel) {
-        channelQueue += channel
+    internal fun stopChannel(): Channel? {
+        return channeling?.run {
+            channeling = null
+            this
+        }
+    }
+
+    inner class Channel(val ability: CastableAbility, ticks: Int, vararg val args: Any) {
+
+        internal val castTick = currentTicks + ticks
+
+        val remainTicks
+            get() = max(castTick - currentTicks, 0)
+
+        internal fun cast() {
+            kotlin.runCatching { ability.onCast(args) }
+        }
     }
 }
 
 
-class PsychicSpec(specFile: File) {
+class PsychicSpec(storage: PsychicStorage, specFile: File) {
 
     val name: String
 
@@ -263,7 +277,7 @@ class PsychicSpec(specFile: File) {
     init {
         val config = YamlConfiguration.loadConfiguration(specFile)
 
-        name = config.findString("name")
+        name = specFile.name.removeSuffix(".yml")
         displayName = config.getString("display-name") ?: name
         mana = max(config.getDouble("mana"), 0.0)
         manaRegenPerSec = config.getDouble("mana-regen-per-sec")
@@ -273,15 +287,16 @@ class PsychicSpec(specFile: File) {
 
             var absent = false
 
-            for ((abilityName, value) in config.getValues(false)) {
+            for ((abilityName, value) in getValues(false)) {
                 if (value is ConfigurationSection) {
-                    Psychics.storage.abilityModels[abilityName]?.let { abilityModel ->
+                    storage.abilityModels[abilityName]?.let { abilityModel ->
                         list += abilityModel.specClass.newInstance().apply {
                             model = abilityModel
                             psychicSpec = this@PsychicSpec
                             description = abilityModel.description.description
-                            if (applyConfig(value))
+                            if (applyConfig(value, true)) {
                                 absent = true
+                            }
                             onInitialize()
                         }
 

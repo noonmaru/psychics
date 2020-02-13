@@ -38,6 +38,14 @@ class PsychicPlugin : JavaPlugin() {
         Psychics.initialize(this)
         setupCommands()
 
+        Psychics.storage.abilityModels.values.let { models ->
+            logger.info("Loaded abilities: ${models.joinToString { model -> model.description.name }}")
+        }
+
+        Psychics.storage.psychicSpecs.values.let { specs ->
+            logger.info("Loaded psychics: ${specs.joinToString { spec -> spec.name }}")
+        }
+
         logger.info("HEROES ASSEMBLE!")
     }
 

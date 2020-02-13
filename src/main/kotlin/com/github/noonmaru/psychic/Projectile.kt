@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions
 import org.bukkit.Location
 import org.bukkit.util.RayTraceResult
 import org.bukkit.util.Vector
+import kotlin.math.max
 
 open class Projectile {
 
@@ -107,7 +108,7 @@ open class Projectile {
 fun playParticles(start: Location, end: Location, interval: Double, effector: (Location) -> Unit) {
     val direction = Vector(end.x - start.x, end.y - start.y, end.z - start.z)
     val length = direction.length()
-    val count = (length / interval).toInt()
+    val count = max(1, (length / interval).toInt())
 
     playParticles(start, direction, interval, count, effector)
 }
@@ -116,7 +117,7 @@ fun playParticles(start: Location, direction: Vector, interval: Double, count: I
     val effectLoc = start.clone()
     val effectVec = direction.clone().normalize().multiply(interval)
 
-    for (i in 1..count) {
+    for (i in 0 until count) {
         start.copyTo(effectLoc)
 
         effectLoc.apply {

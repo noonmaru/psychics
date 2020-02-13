@@ -25,10 +25,14 @@ class Esper(val player: Player) {
 
     var valid = false
 
-    fun applyPsychic(psychicSpec: PsychicSpec?) {
+    fun applyPsychic(psychicSpec: PsychicSpec?): Psychic? {
         this.psychic?.unregister()
 
-        psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
+        val psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
+
+        this.psychic = psychic
+
+        return psychic
     }
 
     internal fun destroy() {

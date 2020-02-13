@@ -24,6 +24,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
+
 class CommandApply : CommandComponent {
 
     override val argsCount: Int
@@ -47,7 +48,9 @@ class CommandApply : CommandComponent {
             val psychicSpec = Psychics.storage.psychicSpecs[psychicName]
 
             if (psychicSpec != null) {
-                esper.applyPsychic(psychicSpec)
+                esper.applyPsychic(psychicSpec)!!.apply {
+                    enabled = true
+                }
                 sender.sendMessage("${esper.player.name}에게 ${psychicSpec.name}(을)를 적용했습니다.")
             } else {
                 sender.sendMessage("능력을 찾지 못했습니다. $psychicName")

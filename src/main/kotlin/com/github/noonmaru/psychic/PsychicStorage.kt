@@ -37,8 +37,13 @@ class PsychicStorage internal constructor(abilityModelsDir: File, psychicsDir: F
             val models = TreeMap<String, AbilityModel>(String.CASE_INSENSITIVE_ORDER)
 
             files?.forEach { file ->
-                val model = abilityLoader.load(file)
-                models[model.description.name] = model
+                runCatching {
+                    val model = abilityLoader.load(file)
+                    models[model.description.name] = model
+                }.onFailure {
+                    Psychics.logger.warning("Failed to load AbilityModel for '${file.name}")
+                    it.printStackTrace()
+                }
             }
 
             ImmutableSortedMap.copyOfSorted(models)
@@ -48,8 +53,12 @@ class PsychicStorage internal constructor(abilityModelsDir: File, psychicsDir: F
             val specs = TreeMap<String, PsychicSpec>(String.CASE_INSENSITIVE_ORDER)
 
             files?.forEach { file ->
-                val spec = PsychicSpec(file)
-                specs[spec.name] = spec
+                kotlin.runCatching {
+                    val spec = PsychicSpec(this, file)
+                    specs[spec.name] = spec
+                }.onFailure {
+                    Psychics.logger.info("Failed to load Psychic for $file")
+                }
             }
 
             ImmutableSortedMap.copyOfSorted(specs)
