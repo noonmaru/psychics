@@ -97,7 +97,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             ImmutableList.copyOf(list)
         }
 
-        manaBar = if (spec.mana > 0) Bukkit.createBossBar("Mana", BarColor.BLUE, BarStyle.SOLID) else null
+        manaBar = if (spec.mana > 0) Bukkit.createBossBar(null, BarColor.BLUE, BarStyle.SOLID) else null
     }
 
     internal fun register(esper: Esper) {
@@ -213,6 +213,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             castingBar.progress = remain.toDouble() / ability.spec.channelDuration
 
             if (remain <= 0) {
+                castingBar.setTitle(null)
                 castingBar.isVisible = false
                 channeling = null
                 cast()
