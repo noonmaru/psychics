@@ -154,12 +154,14 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
         this.valid = false
 
+        manaBar?.removeAll()
+        castingBar.removeAll()
+
         for (playerListener in playerListeners) {
             playerListener.unregister()
         }
 
         playerListeners.clear()
-
         scheduler.cancelAll()
         projectiles.removeAll()
     }
