@@ -58,6 +58,7 @@ class PsychicStorage internal constructor(abilityModelsDir: File, psychicsDir: F
                     specs[spec.name] = spec
                 }.onFailure {
                     Psychics.logger.info("Failed to load Psychic for $file")
+                    it.printStackTrace()
                 }
             }
 

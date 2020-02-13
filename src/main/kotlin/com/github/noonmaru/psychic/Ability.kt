@@ -152,7 +152,10 @@ abstract class Ability {
             return (field - currentTicks).coerceIn(0, Int.MAX_VALUE)
         }
         set(value) {
+            checkState()
+
             field = currentTicks + value.coerceIn(0, Int.MAX_VALUE)
+            spec._wand?.let { psychic.esper.player.setCooldown(it.type, value) }
         }
 
     lateinit var esper: Esper

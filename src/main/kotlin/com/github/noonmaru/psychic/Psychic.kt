@@ -146,7 +146,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
     }
 
     fun getAbilityByWand(item: ItemStack): Ability? {
-        return abilities.find { ability -> ability.spec.wand?.isSimilar(item) ?: false }
+        return abilities.find { ability -> ability.spec._wand?.isSimilar(item) ?: false }
     }
 
     internal fun unregister() {
@@ -309,10 +309,11 @@ class PsychicSpec(storage: PsychicStorage, specFile: File) {
                 if (value is ConfigurationSection) {
                     storage.abilityModels[abilityName]?.let { abilityModel ->
                         list += abilityModel.specClass.newInstance().apply {
-                            initialize(model, this@PsychicSpec)
+                            initialize(abilityModel, this@PsychicSpec)
                             if (applyConfig(value, true)) {
                                 absent = true
                             }
+
                             onInitialize()
                         }
 
