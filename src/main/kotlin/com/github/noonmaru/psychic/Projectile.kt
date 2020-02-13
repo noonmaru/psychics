@@ -55,20 +55,23 @@ open class Projectile {
 
         ticks++
         rayTracer?.runCatching {
-            val vector = loc.vector(toLoc)
-            val length = vector.length()
+            if (loc.world == toLoc.world) {
 
-            vector.apply {
-                x /= length
-                y /= length
-                z /= length
-            }
+                val vector = loc.vector(toLoc)
+                val length = vector.length()
 
-            invoke(loc, vector, length)?.let { result ->
-                rayTraceResult = result
-                val v = result.hitPosition
-                toLoc.set(v.x, v.y, v.z)
-                remove()
+                vector.apply {
+                    x /= length
+                    y /= length
+                    z /= length
+                }
+
+                invoke(loc, vector, length)?.let { result ->
+                    rayTraceResult = result
+                    val v = result.hitPosition
+                    toLoc.set(v.x, v.y, v.z)
+                    remove()
+                }
             }
         }
 
@@ -101,20 +104,21 @@ open class Projectile {
     }
 }
 
-fun playParticles(loc: Location, vector: Vector, interval: Double, effector: (Location) -> Unit) {
-    val effectLoc = loc.clone()
-    val effectVec = vector.clone()
-    val length = vector.length()
+fun playParticles(start: Location, end: Location, interval: Double, effector: (Location) -> Unit) {
+    val direction = Vector(end.x - start.x, end.y - start.y, end.z - start.z)
+    val length = direction.length()
     val count = (length / interval).toInt()
 
-    effectVec.apply {
-        x /= count
-        y /= count
-        z /= count
-    }
+    playParticles(start, direction, interval, count, effector)
+}
+
+fun playParticles(start: Location, direction: Vector, interval: Double, count: Int, effector: (Location) -> Unit) {
+    val effectLoc = start.clone()
+    val effectVec = direction.clone().normalize().multiply(interval)
 
     for (i in 1..count) {
-        loc.copyTo(effectLoc)
+        start.copyTo(effectLoc)
+
         effectLoc.apply {
             effectVec.let { v ->
                 x += v.x * i
