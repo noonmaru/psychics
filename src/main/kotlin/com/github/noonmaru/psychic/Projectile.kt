@@ -35,7 +35,7 @@ open class Projectile {
     lateinit var vector: Vector
         internal set
 
-    var rayTracer: ((Location, Vector) -> RayTraceResult?)? = null
+    var rayTracer: ((start: Location, direction: Vector, maxDistance: Double) -> RayTraceResult?)? = null
 
     var rayTraceResult: RayTraceResult? = null
         private set
@@ -55,7 +55,16 @@ open class Projectile {
 
         ticks++
         rayTracer?.runCatching {
-            invoke(loc, loc.vector(toLoc))?.let { result ->
+            val vector = loc.vector(toLoc)
+            val length = vector.length()
+
+            vector.apply {
+                x /= length
+                y /= length
+                z /= length
+            }
+
+            invoke(loc, vector, length)?.let { result ->
                 rayTraceResult = result
                 val v = result.hitPosition
                 toLoc.set(v.x, v.y, v.z)
