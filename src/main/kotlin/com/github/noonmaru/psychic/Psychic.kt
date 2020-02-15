@@ -188,6 +188,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         checkState()
 
         projectile.apply {
+            this.shooter = this@Psychic
             this.prevLoc = spawn.clone()
             this.loc = spawn.clone()
             this.toLoc = spawn.clone().add(vector)

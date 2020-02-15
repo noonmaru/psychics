@@ -24,6 +24,9 @@ import kotlin.math.max
 
 open class Projectile {
 
+    lateinit var shooter: Psychic
+        internal set
+
     lateinit var prevLoc: Location
         internal set
 
