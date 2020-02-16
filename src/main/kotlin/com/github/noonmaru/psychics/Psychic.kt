@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.task.PsychicScheduler
-import com.github.noonmaru.psychic.utils.currentTicks
+import com.github.noonmaru.psychics.task.PsychicScheduler
+import com.github.noonmaru.psychics.utils.currentTicks
 import com.github.noonmaru.tap.config.applyConfig
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.google.common.base.Preconditions

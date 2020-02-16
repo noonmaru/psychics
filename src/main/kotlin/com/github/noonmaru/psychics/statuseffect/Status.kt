@@ -14,24 +14,14 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics.statuseffect
 
-import com.github.noonmaru.psychic.utils.FakeManager
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.entity.LivingEntity
+import java.util.*
 
-class EventListener internal constructor(private val mainFakeManager: FakeManager) : Listener {
+class Status internal constructor(entity: LivingEntity) {
 
-    @EventHandler
-    fun onJoin(event: PlayerJoinEvent) {
-        mainFakeManager.handle.addPlayer(event.player)
-    }
+    private val effects = IdentityHashMap<StatusEffectType, StatusEffect>()
 
-    @EventHandler
-    fun onQuit(event: PlayerQuitEvent) {
-        mainFakeManager.handle.removePlayer(event.player)
-    }
 
 }

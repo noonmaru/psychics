@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.utils.currentTicks
-import com.github.noonmaru.psychic.utils.findString
+import com.github.noonmaru.psychics.utils.currentTicks
+import com.github.noonmaru.psychics.utils.findString
 import com.github.noonmaru.tap.config.Config
 import com.github.noonmaru.tap.config.Name
 import com.github.noonmaru.tap.config.RangeDouble

@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.task
+package com.github.noonmaru.psychics.task
 
-import com.github.noonmaru.psychic.utils.currentTicks
+import com.github.noonmaru.psychics.utils.currentTicks
 import java.util.*
 import kotlin.math.max
 

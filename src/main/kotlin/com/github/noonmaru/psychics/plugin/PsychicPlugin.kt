@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.plugin
+package com.github.noonmaru.psychics.plugin
 
-import com.github.noonmaru.psychic.Psychics
-import com.github.noonmaru.psychic.cmd.CommandApply
+import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.cmd.CommandApply
 import com.github.noonmaru.tap.command.command
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -50,7 +50,7 @@ class PsychicPlugin : JavaPlugin() {
     }
 
     private fun setupCommands() {
-        command("psychic") {
+        command("psychics") {
             help("help")
             component("apply") {
                 usage = "<Psychic> [Player...]"

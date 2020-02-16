@@ -14,17 +14,31 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.utils
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.tap.fake.FakeEntity
-import com.github.noonmaru.tap.fake.FakeEntityManager
-import org.bukkit.Location
-import kotlin.reflect.KClass
+import org.bukkit.entity.Player
 
-class FakeManager internal constructor(internal val handle: FakeEntityManager) {
+class Esper(val player: Player) {
 
-    fun <T : FakeEntity> createFake(loc: Location, type: KClass<T>): T {
-        return handle.createFakeEntity(loc, type)
+    var psychic: Psychic? = null
+        private set
+
+    var valid = false
+
+    fun applyPsychic(psychicSpec: PsychicSpec?): Psychic? {
+        this.psychic?.unregister()
+
+        val psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
+
+        this.psychic = psychic
+
+        return psychic
+    }
+
+    internal fun destroy() {
+        valid = false
+
+        psychic?.unregister()
     }
 
 }

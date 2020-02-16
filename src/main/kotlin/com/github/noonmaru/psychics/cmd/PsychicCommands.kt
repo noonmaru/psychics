@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.cmd
+package com.github.noonmaru.psychics.cmd
 
-import com.github.noonmaru.psychic.Psychics
-import com.github.noonmaru.psychic.esper
+import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.esper
 import com.github.noonmaru.tap.command.ArgumentList
 import com.github.noonmaru.tap.command.CommandComponent
 import com.github.noonmaru.tap.command.tabComplete

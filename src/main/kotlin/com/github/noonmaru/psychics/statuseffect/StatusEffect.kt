@@ -14,10 +14,24 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.utils
+package com.github.noonmaru.psychics.statuseffect
 
-import org.bukkit.configuration.ConfigurationSection
+import com.github.noonmaru.psychics.utils.currentTicks
+import kotlin.math.max
 
-internal fun ConfigurationSection.findString(path: String): String {
-    return getString(path) ?: throw NullPointerException("Undefined $path")
+open class StatusEffect {
+
+    var durationTick: Int = 0
+        set(value) {
+            field = max(0, value)
+            endTick = currentTicks + value
+        }
+
+    internal var endTick: Int = 0
+        private set
+
+    val remainTick
+        get() = max(0, endTick - currentTicks)
+
+
 }

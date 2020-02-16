@@ -14,12 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.utils
+package com.github.noonmaru.psychics.utils
 
-private val INIT_NANO_TIME = System.nanoTime()
+import org.bukkit.configuration.ConfigurationSection
 
-val currentTicks: Int
-    get() {
-        return ((System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)).toInt()
-    }
-
+internal fun ConfigurationSection.findString(path: String): String {
+    return getString(path) ?: throw NullPointerException("Undefined $path")
+}

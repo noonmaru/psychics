@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.loader.AbilityLoader
+import com.github.noonmaru.psychics.loader.AbilityLoader
 import com.google.common.collect.ImmutableSortedMap
 import java.io.File
 import java.util.*

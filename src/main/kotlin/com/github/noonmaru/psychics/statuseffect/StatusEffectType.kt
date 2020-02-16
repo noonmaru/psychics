@@ -14,24 +14,6 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.statuseffect
+package com.github.noonmaru.psychics.statuseffect
 
-import com.github.noonmaru.psychic.utils.currentTicks
-import kotlin.math.max
-
-open class StatusEffect {
-
-    var durationTick: Int = 0
-        set(value) {
-            field = max(0, value)
-            endTick = currentTicks + value
-        }
-
-    internal var endTick: Int = 0
-        private set
-
-    val remainTick
-        get() = max(0, endTick - currentTicks)
-
-
-}
+class StatusEffectType

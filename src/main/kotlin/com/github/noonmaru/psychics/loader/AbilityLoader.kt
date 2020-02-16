@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.loader
+package com.github.noonmaru.psychics.loader
 
-import com.github.noonmaru.psychic.AbilityDescription
-import com.github.noonmaru.psychic.AbilityModel
-import com.github.noonmaru.psychic.AbilitySpec
+import com.github.noonmaru.psychics.AbilityDescription
+import com.github.noonmaru.psychics.AbilityModel
+import com.github.noonmaru.psychics.AbilitySpec
 import com.google.common.base.Preconditions
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File

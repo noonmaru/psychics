@@ -14,6 +14,17 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.statuseffect
+package com.github.noonmaru.psychics.utils
 
-class StatusEffectType
+import com.github.noonmaru.tap.fake.FakeEntity
+import com.github.noonmaru.tap.fake.FakeEntityManager
+import org.bukkit.Location
+import kotlin.reflect.KClass
+
+class FakeManager internal constructor(internal val handle: FakeEntityManager) {
+
+    fun <T : FakeEntity> createFake(loc: Location, type: KClass<T>): T {
+        return handle.createFakeEntity(loc, type)
+    }
+
+}

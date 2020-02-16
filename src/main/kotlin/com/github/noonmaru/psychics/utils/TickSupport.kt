@@ -14,14 +14,12 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.statuseffect
+package com.github.noonmaru.psychics.utils
 
-import org.bukkit.entity.LivingEntity
-import java.util.*
+private val INIT_NANO_TIME = System.nanoTime()
 
-class Status internal constructor(entity: LivingEntity) {
+val currentTicks: Int
+    get() {
+        return ((System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)).toInt()
+    }
 
-    private val effects = IdentityHashMap<StatusEffectType, StatusEffect>()
-
-
-}

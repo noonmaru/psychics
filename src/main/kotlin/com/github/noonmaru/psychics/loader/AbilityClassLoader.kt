@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.loader
+package com.github.noonmaru.psychics.loader
 
 import java.io.File
 import java.net.URLClassLoader

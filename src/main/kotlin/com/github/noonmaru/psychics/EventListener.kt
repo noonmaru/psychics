@@ -14,31 +14,24 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import org.bukkit.entity.Player
+import com.github.noonmaru.psychics.utils.FakeManager
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-class Esper(val player: Player) {
+class EventListener internal constructor(private val mainFakeManager: FakeManager) : Listener {
 
-    var psychic: Psychic? = null
-        private set
-
-    var valid = false
-
-    fun applyPsychic(psychicSpec: PsychicSpec?): Psychic? {
-        this.psychic?.unregister()
-
-        val psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
-
-        this.psychic = psychic
-
-        return psychic
+    @EventHandler
+    fun onJoin(event: PlayerJoinEvent) {
+        mainFakeManager.handle.addPlayer(event.player)
     }
 
-    internal fun destroy() {
-        valid = false
-
-        psychic?.unregister()
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        mainFakeManager.handle.removePlayer(event.player)
     }
 
 }

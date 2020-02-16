@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.utils.FakeManager
+import com.github.noonmaru.psychics.utils.FakeManager
 
 class Scheduler internal constructor(val esperManager: EsperManager, val fakeManager: FakeManager) : Runnable {
 

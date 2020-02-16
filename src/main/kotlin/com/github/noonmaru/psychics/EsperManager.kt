@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.plugin.PsychicPlugin
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler

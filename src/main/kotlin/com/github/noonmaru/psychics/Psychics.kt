@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychic.plugin.PsychicPlugin
-import com.github.noonmaru.psychic.utils.FakeManager
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
+import com.github.noonmaru.psychics.utils.FakeManager
 import com.github.noonmaru.tap.event.EntityEventManager
 import com.github.noonmaru.tap.fake.FakeEntityManager
 import org.bukkit.entity.Player

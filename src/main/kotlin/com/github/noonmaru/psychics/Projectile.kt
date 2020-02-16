@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychics
 
 import com.google.common.base.Preconditions
 import org.bukkit.Location

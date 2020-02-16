@@ -7,4 +7,4 @@ commands:
   psychic:
     aliases: ['pch']
     usage: /<command> help
-    permission: 'psychic.commands'
+    permission: 'psychics.commands'

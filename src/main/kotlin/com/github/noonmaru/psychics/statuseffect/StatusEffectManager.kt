@@ -14,6 +14,6 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic.statuseffect
+package com.github.noonmaru.psychics.statuseffect
 
 class StatusEffectManager
