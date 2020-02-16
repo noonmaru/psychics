@@ -138,9 +138,11 @@ class Psychic internal constructor(val spec: PsychicSpec) {
     }
 
     private fun castByWand(item: ItemStack) {
-        getAbilityByWand(item)?.let { ability ->
-            if (ability is CastableAbility) {
-                ability.tryCast()
+        if (enabled) {
+            getAbilityByWand(item)?.let { ability ->
+                if (ability is CastableAbility) {
+                    ability.tryCast()
+                }
             }
         }
     }

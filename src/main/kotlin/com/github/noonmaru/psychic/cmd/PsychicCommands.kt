@@ -52,7 +52,7 @@ class CommandApply : CommandComponent {
                 }
             }
 
-            esper?.applyPsychic(psychic) ?: sender.sendMessage("알 수 없는 이유로 능력을 적용하지 못했습니다.")
+            esper?.applyPsychic(psychic)?.apply { enabled = true } ?: sender.sendMessage("알 수 없는 이유로 능력을 적용하지 못했습니다.")
 
         } ?: sender.sendMessage("$psychicName 능력을 찾지 못했습니다.")
 
