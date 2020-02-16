@@ -23,5 +23,4 @@ class Status internal constructor(entity: LivingEntity) {
 
     private val effects = IdentityHashMap<StatusEffectType, StatusEffect>()
 
-
 }

@@ -39,8 +39,6 @@ class AbilityDescription internal constructor(config: ConfigurationSection) {
 
     val version = config.findString("version")
 
-    val description: List<String> = ImmutableList.copyOf(config.getStringList("description"))
-
     val authors: List<String> = ImmutableList.copyOf(config.getStringList("authors"))
 
 }
@@ -123,12 +121,6 @@ abstract class AbilitySpec {
 
         if (CastableAbility::class.java.isAssignableFrom(abilityClass))
             type = AbilityType.CASTING
-
-        model.description.let {
-            if (!this::displayName.isInitialized)
-                displayName = it.name
-            description = it.description
-        }
     }
 
     fun onInitialize() {}
