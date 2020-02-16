@@ -260,6 +260,16 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         }
     }
 
+    fun consumeMana(amount: Double): Boolean {
+        if (mana > amount) {
+            mana -= amount
+
+            return true
+        }
+
+        return false
+    }
+
     internal fun startChannel(ability: CastableAbility, ticks: Int, vararg args: Any) {
         channeling = Channel(ability, ticks, args)
         castingBar.setTitle(ability.spec.displayName)
