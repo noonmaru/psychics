@@ -32,13 +32,15 @@ object Psychics {
     lateinit var entityEventBus: EntityEventManager
         private set
 
+    lateinit var fakeManager: FakeManager
+        private set
+
     lateinit var storage: PsychicStorage
         private set
 
     lateinit var esperManager: EsperManager
         private set
 
-    lateinit var fakeManager: FakeManager
 
     internal fun initialize(plugin: PsychicPlugin) {
         logger = plugin.logger

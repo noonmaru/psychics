@@ -229,6 +229,16 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             this.prevMana = this.mana
             manaBar?.progress = this.mana / this.spec.mana
         }
+
+        esper.player.let { player ->
+            val ability = getAbilityByWand(player.inventory.itemInMainHand)
+
+            if (ability != null) {
+                player.sendActionBar(ability.createStatusText() ?: " ")
+            } else {
+                player.sendActionBar(" ")
+            }
+        }
     }
 
     private fun regenMana() {
@@ -281,7 +291,6 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         }
     }
 }
-
 
 class PsychicSpec(storage: PsychicStorage, specFile: File) {
 

@@ -23,6 +23,7 @@ import com.github.noonmaru.tap.config.Name
 import com.github.noonmaru.tap.config.RangeDouble
 import com.github.noonmaru.tap.config.RangeInt
 import com.google.common.collect.ImmutableList
+import org.bukkit.ChatColor
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 import java.io.File
@@ -178,6 +179,16 @@ abstract class Ability {
 
     fun checkState() {
         psychic.checkState()
+    }
+
+    internal fun createStatusText(): String? {
+        val cooldown = this.cooldown
+
+        if (cooldown > 0) {
+            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${cooldown / 2 / 10.0}"
+        }
+
+        return null
     }
 
 }

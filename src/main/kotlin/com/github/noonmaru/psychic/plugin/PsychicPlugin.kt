@@ -64,5 +64,7 @@ class PsychicPlugin : JavaPlugin() {
         for (esper in Psychics.esperManager.getEspers()) {
             esper.destroy()
         }
+
+        Psychics.fakeManager.handle.destroyAll()
     }
 }
