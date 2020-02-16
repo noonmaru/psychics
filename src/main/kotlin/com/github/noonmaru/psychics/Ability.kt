@@ -185,7 +185,7 @@ abstract class Ability {
         val cooldown = this.cooldown
 
         if (cooldown > 0) {
-            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${cooldown / 2 / 10.0}"
+            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldown / 2) / 10.0}"
         }
 
         return null
