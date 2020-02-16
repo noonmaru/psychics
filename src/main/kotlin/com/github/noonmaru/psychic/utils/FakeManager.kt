@@ -14,17 +14,17 @@
  *  limitations under the License.
  */
 
-package com.github.noonmaru.psychic
+package com.github.noonmaru.psychic.utils
 
-import com.github.noonmaru.psychic.utils.FakeManager
+import com.github.noonmaru.tap.fake.FakeEntity
+import com.github.noonmaru.tap.fake.FakeEntityManager
+import org.bukkit.Location
+import kotlin.reflect.KClass
 
-class Scheduler internal constructor(val esperManager: EsperManager, val fakeManager: FakeManager) : Runnable {
+class FakeManager internal constructor(internal val handle: FakeEntityManager) {
 
-    override fun run() {
-        for (esper in esperManager.getEspers()) {
-            esper.psychic?.update()
-        }
-
-        fakeManager.handle.run()
+    fun <T : FakeEntity> createFake(loc: Location, type: KClass<T>): T {
+        return handle.createFakeEntity(loc, type)
     }
+
 }

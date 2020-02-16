@@ -17,14 +17,21 @@
 package com.github.noonmaru.psychic
 
 import com.github.noonmaru.psychic.utils.FakeManager
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-class Scheduler internal constructor(val esperManager: EsperManager, val fakeManager: FakeManager) : Runnable {
+class EventListener internal constructor(private val mainFakeManager: FakeManager) : Listener {
 
-    override fun run() {
-        for (esper in esperManager.getEspers()) {
-            esper.psychic?.update()
-        }
-
-        fakeManager.handle.run()
+    @EventHandler
+    fun onJoin(event: PlayerJoinEvent) {
+        mainFakeManager.handle.addPlayer(event.player)
     }
+
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        mainFakeManager.handle.removePlayer(event.player)
+    }
+
 }
