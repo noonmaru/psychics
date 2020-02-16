@@ -20,6 +20,7 @@ import com.github.noonmaru.psychic.Psychics
 import com.github.noonmaru.psychic.esper
 import com.github.noonmaru.tap.command.ArgumentList
 import com.github.noonmaru.tap.command.CommandComponent
+import com.github.noonmaru.tap.command.tabComplete
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -56,6 +57,19 @@ class CommandApply : CommandComponent {
         } ?: sender.sendMessage("$psychicName 능력을 찾지 못했습니다.")
 
         return true
+    }
+
+    override fun onTabComplete(
+        sender: CommandSender,
+        label: String,
+        componentLabel: String,
+        args: ArgumentList
+    ): List<String> {
+        return when (args.remain()) {
+            1 -> Psychics.storage.psychicSpecs.keys.tabComplete(args.last())
+            2 -> Bukkit.getOnlinePlayers().tabComplete(args.last()) { it.name }
+            else -> emptyList()
+        }
     }
 }
 
