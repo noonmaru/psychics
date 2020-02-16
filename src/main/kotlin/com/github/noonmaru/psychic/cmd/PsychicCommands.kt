@@ -31,33 +31,29 @@ class CommandApply : CommandComponent {
         get() = 1
 
     override fun onCommand(sender: CommandSender, label: String, componentLabel: String, args: ArgumentList): Boolean {
-        val esper = if (args.remain() == 1) {
-            if (sender is Player) {
-                sender.esper
-            } else {
-                sender.sendMessage("콘솔에서 사용 할 수 없는 명령입니다.")
-                return true
-            }
-        } else {
-            val name = args.next()
-            Bukkit.getPlayerExact(name)?.esper
-        }
+        val psychicName = args.next()
+        Psychics.storage.psychicSpecs[psychicName]?.let { psychic ->
+            val esper = if (args.hasNext()) {
+                val playerName = args.next()
+                val player = Bukkit.getPlayerExact(playerName)
 
-        if (esper != null) {
-            val psychicName = args.next()
-            val psychicSpec = Psychics.storage.psychicSpecs[psychicName]
-
-            if (psychicSpec != null) {
-                esper.applyPsychic(psychicSpec)!!.apply {
-                    enabled = true
+                if (player == null) {
+                    sender.sendMessage("플레이어를 찾지 못했습니다.")
+                    return true
                 }
-                sender.sendMessage("${esper.player.name}에게 ${psychicSpec.name}(을)를 적용했습니다.")
+
+                player.esper
             } else {
-                sender.sendMessage("능력을 찾지 못했습니다. $psychicName")
+                if (sender is Player) {
+                    sender.esper
+                } else {
+                    return false
+                }
             }
-        } else {
-            sender.sendMessage("Non esper player")
-        }
+
+            esper?.applyPsychic(psychic) ?: sender.sendMessage("알 수 없는 이유로 능력을 적용하지 못했습니다.")
+
+        } ?: sender.sendMessage("$psychicName 능력을 찾지 못했습니다.")
 
         return true
     }
