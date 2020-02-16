@@ -4,7 +4,7 @@ depend: [Kotlin, Tap]
 api-version: '1.13'
 version: $pluginVersion
 commands:
-  psychic:
+  psychics:
     aliases: ['pch']
     usage: /<command> help
     permission: 'psychics.commands'

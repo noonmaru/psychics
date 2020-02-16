@@ -155,7 +155,8 @@ abstract class Ability {
             spec._wand?.let { psychic.esper.player.setCooldown(it.type, value) }
         }
 
-    lateinit var esper: Esper
+    val esper: Esper
+        get() = psychic.esper
 
     open fun onInitialize() {}
 
