@@ -1,4 +1,4 @@
-# PSYCHIC
+# PSYCHICS
 [![Build Status](https://travis-ci.org/noonmaru/psychic.svg?branch=master)](https://travis-ci.org/noonmaru/psychic)
 [![](https://jitpack.io/v/noonmaru/psychic.svg)](https://jitpack.io/#noonmaru/psychic)
 ![JitPack - Downloads](https://img.shields.io/jitpack/dm/github/noonmaru/psychic)
