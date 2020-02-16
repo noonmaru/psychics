@@ -188,7 +188,7 @@ abstract class Ability {
 
 abstract class CastableAbility : Ability() {
 
-    var argsSupplier: (() -> Array<Any>?)? = null
+    var targeter: (() -> Any?)? = null
 
     override fun test(): Boolean {
         return psychic.channeling == null && super.test()
@@ -197,10 +197,10 @@ abstract class CastableAbility : Ability() {
     open fun tryCast(): Boolean {
 
         if (test()) {
-            val supplier = argsSupplier
+            val targeter = this.targeter
 
-            if (supplier != null) {
-                supplier.invoke()?.let {
+            if (targeter != null) {
+                targeter.invoke()?.let {
                     cast(spec.channelDuration, it)
                 }
             } else {
@@ -213,19 +213,20 @@ abstract class CastableAbility : Ability() {
         return false
     }
 
-    protected fun cast(channelTicks: Int, vararg args: Any) {
+    protected fun cast(channelTicks: Int, target: Any? = null) {
+
         checkState()
 
         if (channelTicks > 0) {
-            psychic.startChannel(this, channelTicks, args)
+            psychic.startChannel(this, channelTicks, target)
         } else {
-            onCast(args)
+            onCast(target)
         }
     }
 
-    abstract fun onCast(vararg args: Any)
+    abstract fun onCast(target: Any?)
 
-    open fun onInterrupt(args: Array<out Any>) {}
+    open fun onInterrupt(target: Any?) {}
 
 }
 

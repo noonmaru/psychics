@@ -270,8 +270,8 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         return false
     }
 
-    internal fun startChannel(ability: CastableAbility, ticks: Int, vararg args: Any) {
-        channeling = Channel(ability, ticks, args)
+    internal fun startChannel(ability: CastableAbility, ticks: Int, target: Any? = null) {
+        channeling = Channel(ability, ticks, target)
         castingBar.setTitle(ability.spec.displayName)
         castingBar.progress = 0.0
         castingBar.isVisible = true
@@ -285,7 +285,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         }
     }
 
-    inner class Channel(val ability: CastableAbility, ticks: Int, vararg val args: Any) {
+    inner class Channel(val ability: CastableAbility, ticks: Int, val target: Any? = null) {
 
         internal val channelTick = currentTicks + ticks
 
@@ -293,11 +293,11 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             get() = max(channelTick - currentTicks, 0)
 
         internal fun cast() {
-            runCatching { ability.onCast(args) }
+            runCatching { ability.onCast(target) }
         }
 
         internal fun interrupt() {
-            runCatching { ability.onInterrupt(args) }
+            runCatching { ability.onInterrupt(target) }
         }
     }
 }
