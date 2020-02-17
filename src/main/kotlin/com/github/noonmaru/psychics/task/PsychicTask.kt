@@ -85,7 +85,7 @@ class PsychicScheduler : Runnable {
         while (queue.isNotEmpty()) {
             val task = queue.peek()
 
-            if (task.nextRun < current)
+            if (task.nextRun > current)
                 break
 
             queue.remove()

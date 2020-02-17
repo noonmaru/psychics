@@ -19,11 +19,11 @@ package com.github.noonmaru.psychics.utils
 import com.github.noonmaru.tap.fake.FakeEntity
 import com.github.noonmaru.tap.fake.FakeEntityManager
 import org.bukkit.Location
-import kotlin.reflect.KClass
+import org.bukkit.entity.Entity
 
 class FakeManager internal constructor(internal val handle: FakeEntityManager) {
 
-    fun <T : FakeEntity> createFake(loc: Location, type: KClass<T>): T {
+    fun createFake(loc: Location, type: Class<out Entity>): FakeEntity {
         return handle.createFakeEntity(loc, type)
     }
 
