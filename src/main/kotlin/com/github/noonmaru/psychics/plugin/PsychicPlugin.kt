@@ -18,6 +18,7 @@ package com.github.noonmaru.psychics.plugin
 
 import com.github.noonmaru.psychics.Psychics
 import com.github.noonmaru.psychics.cmd.CommandApply
+import com.github.noonmaru.psychics.cmd.CommandInfo
 import com.github.noonmaru.tap.command.command
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -52,6 +53,11 @@ class PsychicPlugin : JavaPlugin() {
     private fun setupCommands() {
         command("psychics") {
             help("help")
+            component("info") {
+                usage = "[Psychic]"
+                description = "능력 정보를 확인합니다."
+                CommandInfo()
+            }
             component("apply") {
                 usage = "<Psychic> [Player...]"
                 description = "능력을 적용합니다."

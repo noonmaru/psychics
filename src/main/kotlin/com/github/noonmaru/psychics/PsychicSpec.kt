@@ -56,7 +56,7 @@ class PsychicSpec(storage: PsychicStorage, specFile: File) {
                 if (value is ConfigurationSection) {
                     storage.abilityModels[abilityName]?.let { abilityModel ->
                         list += abilityModel.specClass.newInstance().apply {
-                            if (applyConfig(value, true)) {
+                            if (applyConfig(value, false)) {
                                 absent = true
                             }
                             initialize(abilityModel, this@PsychicSpec, value)
