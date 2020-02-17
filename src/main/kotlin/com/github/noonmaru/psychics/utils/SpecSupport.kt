@@ -16,8 +16,23 @@
 
 package com.github.noonmaru.psychics.utils
 
+import com.github.noonmaru.tap.template.processTemplates
 import org.bukkit.configuration.ConfigurationSection
 
 internal fun ConfigurationSection.findString(path: String): String {
     return getString(path) ?: throw NullPointerException("Undefined $path")
+}
+
+internal fun Iterable<String>.processTemplatesAll(config: ConfigurationSection): List<String> {
+    val list = ArrayList<String>(count())
+
+    forEach { s ->
+        s.runCatching {
+            list += processTemplates(config)
+        }.onFailure {
+            throw IllegalArgumentException("Failed to process templates for $s", it)
+        }
+    }
+
+    return list
 }

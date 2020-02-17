@@ -41,7 +41,6 @@ object Psychics {
     lateinit var esperManager: EsperManager
         private set
 
-
     internal fun initialize(plugin: PsychicPlugin) {
         logger = plugin.logger
         entityEventBus = EntityEventManager(plugin)

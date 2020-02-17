@@ -18,6 +18,7 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.utils.currentTicks
 import com.github.noonmaru.psychics.utils.findString
+import com.github.noonmaru.psychics.utils.processTemplatesAll
 import com.github.noonmaru.tap.config.Config
 import com.github.noonmaru.tap.config.Name
 import com.github.noonmaru.tap.config.RangeDouble
@@ -114,13 +115,16 @@ abstract class AbilitySpec {
 
     internal fun initialize(
         model: AbilityModel,
-        psychicSpec: PsychicSpec
+        psychicSpec: PsychicSpec,
+        config: ConfigurationSection
     ) {
         this.model = model
         this.psychicSpec = psychicSpec
 
         if (CastableAbility::class.java.isAssignableFrom(abilityClass))
             type = AbilityType.CASTING
+
+        description = ImmutableList.copyOf(description.processTemplatesAll(config))
     }
 
     fun onInitialize() {}

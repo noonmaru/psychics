@@ -18,7 +18,6 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.task.PsychicScheduler
 import com.github.noonmaru.psychics.utils.currentTicks
-import com.github.noonmaru.tap.config.applyConfig
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
@@ -27,8 +26,6 @@ import org.bukkit.Location
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
-import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -37,7 +34,6 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
-import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 
@@ -299,55 +295,5 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         internal fun interrupt() {
             runCatching { ability.onInterrupt(target) }
         }
-    }
-}
-
-class PsychicSpec(storage: PsychicStorage, specFile: File) {
-
-    val name: String
-
-    val displayName: String
-
-    val mana: Double
-
-    val manaRegenPerSec: Double
-
-    val abilities: List<AbilitySpec>
-
-    init {
-        val config = YamlConfiguration.loadConfiguration(specFile)
-
-        name = specFile.name.removeSuffix(".yml")
-        displayName = config.getString("display-name") ?: name
-        mana = max(config.getDouble("mana"), 0.0)
-        manaRegenPerSec = config.getDouble("mana-regen-per-sec")
-
-        abilities = config.getConfigurationSection("abilities")?.run {
-            val list = ArrayList<AbilitySpec>()
-
-            var absent = false
-
-            for ((abilityName, value) in getValues(false)) {
-                if (value is ConfigurationSection) {
-                    storage.abilityModels[abilityName]?.let { abilityModel ->
-                        list += abilityModel.specClass.newInstance().apply {
-                            initialize(abilityModel, this@PsychicSpec)
-                            if (applyConfig(value, true)) {
-                                absent = true
-                            }
-
-                            onInitialize()
-                        }
-
-                    } ?: throw NullPointerException("Not found AbilityModel for '$abilityName'")
-                }
-            }
-
-            if (absent)
-                config.save(specFile)
-
-            ImmutableList.copyOf(list)
-
-        } ?: ImmutableList.of()
     }
 }
