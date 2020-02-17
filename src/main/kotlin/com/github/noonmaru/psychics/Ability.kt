@@ -109,7 +109,7 @@ abstract class AbilitySpec {
 
     @Config
     var description: List<String> = ImmutableList.of()
-        private set
+        protected set
 
     abstract val abilityClass: Class<out Ability>
 
