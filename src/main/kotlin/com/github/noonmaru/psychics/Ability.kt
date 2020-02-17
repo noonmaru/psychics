@@ -76,7 +76,7 @@ abstract class AbilitySpec {
 
     @Config
     @RangeInt(min = 0)
-    var cooldownTick: Int = 0
+    var cooldownTicks: Int = 0
         protected set
 
     @Config
@@ -148,7 +148,7 @@ abstract class Ability {
     lateinit var psychic: Psychic
         internal set
 
-    var cooldownTick: Int = 0
+    var cooldownTicks: Int = 0
         get() {
             return (field - currentTicks).coerceIn(0, Int.MAX_VALUE)
         }
@@ -171,7 +171,7 @@ abstract class Ability {
     open fun onDisable() {}
 
     open fun test(): Boolean {
-        return psychic.enabled && cooldownTick == 0 && psychic.mana >= spec.cost
+        return psychic.enabled && cooldownTicks == 0 && psychic.mana >= spec.cost
     }
 
     fun checkState() {
@@ -179,10 +179,10 @@ abstract class Ability {
     }
 
     internal fun createStatusText(): String? {
-        val cooldownTick = this.cooldownTick
+        val cooldownTicks = this.cooldownTicks
 
-        if (cooldownTick > 0) {
-            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldownTick / 2) / 10.0}"
+        if (cooldownTicks > 0) {
+            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldownTicks / 2) / 10.0}"
         }
 
         return null

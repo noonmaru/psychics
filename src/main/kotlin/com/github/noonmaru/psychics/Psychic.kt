@@ -45,7 +45,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     var manaRegenPerTick: Double = spec.manaRegenPerSec / 20.0
 
-    var prevRegenManaTick: Int = 0
+    var prevRegenManaTicks: Int = 0
 
     private val manaBar: BossBar?
 
@@ -101,7 +101,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
         this.esper = esper
         this.valid = true
-        this.prevRegenManaTick = currentTicks
+        this.prevRegenManaTicks = currentTicks
         this.manaBar?.addPlayer(esper.player)
         this.castingBar.addPlayer(esper.player)
 
@@ -241,8 +241,8 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         if (manaRegenPerTick > 0) {
 
             val current = currentTicks
-            val elapsed = current - prevRegenManaTick
-            prevRegenManaTick = current
+            val elapsed = current - prevRegenManaTicks
+            prevRegenManaTicks = current
 
             val max = spec.mana
             if (mana < max) {
