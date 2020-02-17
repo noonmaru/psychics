@@ -76,7 +76,7 @@ abstract class AbilitySpec {
 
     @Config
     @RangeInt(min = 0)
-    var cooldown: Int = 0
+    var cooldownTick: Int = 0
         protected set
 
     @Config
@@ -85,12 +85,12 @@ abstract class AbilitySpec {
         protected set
 
     @Config
-    var interruptable: Boolean = false
+    @RangeInt(min = 0)
+    var channelDuration: Int = 0
         protected set
 
     @Config
-    @RangeInt(min = 0)
-    var channelDuration: Int = 0
+    var channelInterruptible: Boolean = false
         protected set
 
     @Config
@@ -108,8 +108,8 @@ abstract class AbilitySpec {
         }
 
     @Config
-    lateinit var description: List<String>
-        internal set
+    var description: List<String> = ImmutableList.of()
+        private set
 
     abstract val abilityClass: Class<out Ability>
 
@@ -148,7 +148,7 @@ abstract class Ability {
     lateinit var psychic: Psychic
         internal set
 
-    var cooldown: Int = 0
+    var cooldownTick: Int = 0
         get() {
             return (field - currentTicks).coerceIn(0, Int.MAX_VALUE)
         }
@@ -171,7 +171,7 @@ abstract class Ability {
     open fun onDisable() {}
 
     open fun test(): Boolean {
-        return psychic.enabled && cooldown == 0 && psychic.mana >= spec.cost
+        return psychic.enabled && cooldownTick == 0 && psychic.mana >= spec.cost
     }
 
     fun checkState() {
@@ -179,10 +179,10 @@ abstract class Ability {
     }
 
     internal fun createStatusText(): String? {
-        val cooldown = this.cooldown
+        val cooldownTick = this.cooldownTick
 
-        if (cooldown > 0) {
-            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldown / 2) / 10.0}"
+        if (cooldownTick > 0) {
+            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldownTick / 2) / 10.0}"
         }
 
         return null
