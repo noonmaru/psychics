@@ -127,7 +127,7 @@ abstract class AbilitySpec {
         description = ImmutableList.copyOf(description.processTemplatesAll(config))
     }
 
-    fun onInitialize() {}
+    open fun onInitialize() {}
 }
 
 enum class AbilityType {
