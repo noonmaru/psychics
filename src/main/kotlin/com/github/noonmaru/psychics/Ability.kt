@@ -166,6 +166,8 @@ abstract class Ability {
 
     open fun onRegister() {}
 
+    open fun onUnregister() {}
+
     open fun onEnable() {}
 
     open fun onDisable() {}

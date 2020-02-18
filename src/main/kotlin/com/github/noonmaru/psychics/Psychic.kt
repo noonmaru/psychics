@@ -152,6 +152,14 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
         this.valid = false
 
+        for (ability in abilities) {
+            try {
+                ability.onUnregister()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
+
         manaBar?.removeAll()
         castingBar.removeAll()
 
