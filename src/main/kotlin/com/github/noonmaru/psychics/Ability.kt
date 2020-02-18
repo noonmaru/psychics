@@ -187,6 +187,10 @@ abstract class Ability {
             return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldownTicks / 2) / 10.0}"
         }
 
+        if (spec.cost > psychic.mana) {
+            return "${ChatColor.BLUE}마나가 부족합니다!"
+        }
+
         return null
     }
 
@@ -235,4 +239,3 @@ abstract class CastableAbility : Ability() {
     open fun onInterrupt(target: Any?) {}
 
 }
-
