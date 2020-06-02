@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics.statuseffect
 
-import com.github.noonmaru.psychics.utils.currentTicks
+import com.github.noonmaru.psychics.util.currentTicks
 import kotlin.math.max
 
 open class StatusEffect {

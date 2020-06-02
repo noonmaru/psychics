@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics.task
 
-import com.github.noonmaru.psychics.utils.currentTicks
+import com.github.noonmaru.psychics.util.currentTicks
 import java.util.*
 import kotlin.math.max
 

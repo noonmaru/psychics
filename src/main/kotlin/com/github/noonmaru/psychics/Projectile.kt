@@ -17,75 +17,134 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.util.UpstreamReference
 import com.google.common.base.Preconditions
 import org.bukkit.Location
 import org.bukkit.util.RayTraceResult
 import org.bukkit.util.Vector
 import kotlin.math.max
 
-open class Projectile {
-
-    lateinit var shooter: Psychic
-        internal set
-
-    lateinit var prevLoc: Location
-        internal set
-
-    lateinit var loc: Location
-        internal set
-
-    lateinit var toLoc: Location
-        internal set
-
-    lateinit var vector: Vector
-        internal set
-
+open class Projectile(
+    var maxTicks: Int,
+    var maxRange: Double,
     var rayTracer: ((start: Location, direction: Vector, maxDistance: Double) -> RayTraceResult?)? = null
+) {
+    private lateinit var shooterRef: UpstreamReference<Psychic>
 
-    var rayTraceResult: RayTraceResult? = null
-        private set
+    val shooter: Psychic
+        get() = shooterRef.get()
+
+    private lateinit var _previousLocation: Location
+
+    private lateinit var _currentLocation: Location
+
+    private lateinit var _targetLocation: Location
+
+    private lateinit var _velocity: Vector
+
+    //interface
+    val previousLocation
+        get() = _previousLocation.clone()
+
+    val currentLocation
+        get() = _currentLocation.clone()
+
+    var targetLocation
+        get() = _targetLocation.clone()
+        set(value) {
+            _targetLocation.set(value)
+        }
+
+    var velocity
+        get() = _velocity.clone()
+        set(value) {
+            _velocity.apply {
+                x = value.x
+                y = value.y
+                z = value.z
+            }
+        }
 
     var ticks = 0
         private set
 
-    var maxTicks = 200
-
-    var flying: Boolean = false
-
-    var valid: Boolean = true
+    var flyingDistance = 0.0
         private set
+
+    val remainDistance
+        get() = max(0.0, maxRange - flyingDistance)
+
+    var rayTraceResult: RayTraceResult? = null
+        private set
+
+    var launched = false
+        internal set
+
+    var valid = true
+        private set
+
+    internal fun init(shooter: Psychic, spawnLocation: Location, velocity: Vector) {
+        this.shooterRef = UpstreamReference(shooter)
+        this._previousLocation = spawnLocation.clone()
+        this._currentLocation = spawnLocation.clone()
+        this._targetLocation = spawnLocation.clone()
+        this._velocity = velocity.clone()
+    }
 
     internal fun update() {
         runCatching { onPreUpdate() }
 
+        val from = _currentLocation
+        val to = _targetLocation
+        val currentVector = to vector from
+        val currentVectorLength = currentVector.length()
+        //벡터 정규화
+        currentVector.apply {
+            x /= currentVectorLength
+            y /= currentVectorLength
+            z /= currentVectorLength
+        }
+
         ticks++
         rayTracer?.runCatching {
-            if (loc.world == toLoc.world) {
-
-                val vector = loc.vector(toLoc)
-                val length = vector.length()
-
-                vector.apply {
-                    x /= length
-                    y /= length
-                    z /= length
-                }
-
-                invoke(loc.clone(), vector, length)?.let { result ->
+            if (from.world == to.world) {
+                invoke(from.clone(), currentVector.clone(), currentVectorLength)?.let { result ->
                     rayTraceResult = result
                     val v = result.hitPosition
-                    toLoc.set(v.x, v.y, v.z)
+                    _targetLocation.set(v.x, v.y, v.z)
                     remove()
                 }
             }
         }
 
-        loc.copyTo(prevLoc)
-        toLoc.copyTo(loc)
-        toLoc.add(vector)
+        _previousLocation.set(_currentLocation)
+        _currentLocation.set(_targetLocation)
+        flyingDistance += currentVectorLength
 
-        if (ticks >= maxTicks) {
-            remove()
+        when {
+            ticks >= maxTicks -> {
+                remove()
+            }
+            flyingDistance >= maxRange -> { //남은 비행거리 모두 소진
+                remove()
+            }
+            else -> {
+                var nextVelocity = _velocity
+                var nextVelocityLength = nextVelocity.length()
+                val remainDistance = remainDistance
+                //남은 비행거리가 현재 속력보다 작을경우 최대사거리를 넘지 않기 위해 속력을 남은거리로 보정
+                if (remainDistance < nextVelocityLength) {
+                    nextVelocityLength = remainDistance
+                    nextVelocity = nextVelocity.clone().apply {
+                        x /= nextVelocityLength
+                        y /= nextVelocityLength
+                        z /= nextVelocityLength
+                        multiply(remainDistance)
+                    }
+                }
+
+                _targetLocation.add(nextVelocity)
+            }
         }
 
         runCatching { onPostUpdate() }
@@ -122,7 +181,7 @@ fun playParticles(start: Location, direction: Vector, interval: Double, count: I
     val effectVec = direction.clone().normalize().multiply(interval)
 
     for (i in 0 until count) {
-        start.copyTo(effectLoc)
+        effectLoc.set(start)
 
         effectLoc.apply {
             effectVec.let { v ->
@@ -136,17 +195,17 @@ fun playParticles(start: Location, direction: Vector, interval: Double, count: I
     }
 }
 
-private fun Location.copyTo(other: Location) {
-    other.world = world
-    other.x = x
-    other.y = y
-    other.z = z
-    other.yaw = yaw
-    other.pitch = pitch
+private fun Location.set(other: Location) {
+    world = other.world
+    x = other.x
+    y = other.y
+    z = other.z
+    yaw = other.yaw
+    pitch = other.pitch
 }
 
-private fun Location.vector(to: Location): Vector {
-    return Vector(to.x - x, to.y - y, to.z - z)
+private infix fun Location.vector(from: Location): Vector {
+    return Vector(x - from.x, y - from.y, z - from.z)
 }
 
 internal class ProjectileManager {
@@ -154,11 +213,11 @@ internal class ProjectileManager {
     private val projectiles = ArrayList<Projectile>()
 
     fun add(projectile: Projectile) {
-        Preconditions.checkState(!projectile.flying, "Already launched Projectile $projectile")
+        Preconditions.checkState(!projectile.launched, "Already launched Projectile $projectile")
         projectile.checkState()
 
         projectile.apply {
-            flying = true
+            launched = true
             projectiles.add(this)
         }
     }

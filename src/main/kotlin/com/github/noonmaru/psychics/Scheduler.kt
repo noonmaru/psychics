@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.utils.FakeManager
+import com.github.noonmaru.psychics.util.FakeManager
 
 class Scheduler internal constructor(val esperManager: EsperManager, val fakeManager: FakeManager) : Runnable {
 

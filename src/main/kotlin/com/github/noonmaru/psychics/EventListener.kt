@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.utils.FakeManager
+import com.github.noonmaru.psychics.util.FakeManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent

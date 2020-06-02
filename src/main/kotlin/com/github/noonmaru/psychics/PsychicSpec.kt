@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.utils.processTemplatesAll
+import com.github.noonmaru.psychics.util.processTemplatesAll
 import com.github.noonmaru.tap.config.applyConfig
 import com.google.common.collect.ImmutableList
 import org.bukkit.configuration.ConfigurationSection

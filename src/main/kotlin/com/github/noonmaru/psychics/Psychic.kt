@@ -18,7 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.task.PsychicScheduler
-import com.github.noonmaru.psychics.utils.currentTicks
+import com.github.noonmaru.psychics.util.currentTicks
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
@@ -193,15 +193,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     fun launch(projectile: Projectile, spawn: Location, vector: Vector) {
         checkState()
-
-        projectile.apply {
-            this.shooter = this@Psychic
-            this.prevLoc = spawn.clone()
-            this.loc = spawn.clone()
-            this.toLoc = spawn.clone().add(vector)
-            this.vector = vector.clone()
-        }
-
+        projectile.init(this, spawn, vector)
         projectiles.add(projectile)
     }
 

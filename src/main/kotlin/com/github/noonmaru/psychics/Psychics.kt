@@ -18,7 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.plugin.PsychicPlugin
-import com.github.noonmaru.psychics.utils.FakeManager
+import com.github.noonmaru.psychics.util.FakeManager
 import com.github.noonmaru.tap.event.EntityEventManager
 import org.bukkit.entity.Player
 import java.io.File

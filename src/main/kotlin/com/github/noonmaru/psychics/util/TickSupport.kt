@@ -15,7 +15,7 @@
  *  
  */
 
-package com.github.noonmaru.psychics.utils
+package com.github.noonmaru.psychics.util
 
 private val INIT_NANO_TIME = System.nanoTime()
 

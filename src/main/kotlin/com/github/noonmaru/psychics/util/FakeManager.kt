@@ -15,7 +15,7 @@
  *  
  */
 
-package com.github.noonmaru.psychics.utils
+package com.github.noonmaru.psychics.util
 
 import com.github.noonmaru.tap.fake.FakeEntity
 import org.bukkit.Bukkit

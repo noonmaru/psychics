@@ -17,9 +17,9 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.utils.currentTicks
-import com.github.noonmaru.psychics.utils.findString
-import com.github.noonmaru.psychics.utils.processTemplatesAll
+import com.github.noonmaru.psychics.util.currentTicks
+import com.github.noonmaru.psychics.util.findString
+import com.github.noonmaru.psychics.util.processTemplatesAll
 import com.github.noonmaru.tap.config.Config
 import com.github.noonmaru.tap.config.Name
 import com.github.noonmaru.tap.config.RangeDouble
