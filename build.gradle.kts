@@ -34,9 +34,9 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8")) //kotlin
     implementation("junit:junit:4.12")
-    implementation("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
-    implementation("com.comphenix.protocol:ProtocolLib:4.5.0")
-    implementation("com.github.noonmaru:tap:2.3.6")
+    implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
+    implementation("com.comphenix.protocol:ProtocolLib:4.6.0")
+    implementation("com.github.noonmaru:tap:2.6-dev")
 }
 
 tasks {
