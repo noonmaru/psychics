@@ -20,7 +20,7 @@ plugins {
     `maven-publish`
 }
 
-group = properties["pluginName"]!!
+group = properties["pluginGroup"]!!
 version = properties["pluginVersion"]!!
 
 repositories {
@@ -61,19 +61,18 @@ tasks {
         from(jar)
         into("W:\\Servers\\psychics-1.16.1\\plugins")
     }
-}
-
-tasks {
     create<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
+}
 
-    if (project.name == "api") {
-        processResources {
-            filesMatching("**/*.yml") {
-                expand(project.properties)
-            }
+publishing {
+    publications {
+        create<MavenPublication>("Psychics") {
+            artifactId = project.name
+            from(components["java"])
+            artifact(tasks["sourcesJar"])
         }
     }
 }
