@@ -72,6 +72,6 @@ class PsychicPlugin : JavaPlugin() {
             esper.destroy()
         }
 
-        Psychics.fakeManager.handle.destroyAll()
+        Psychics.fakeManager.handle.shutdown()
     }
 }

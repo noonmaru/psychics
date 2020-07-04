@@ -18,12 +18,12 @@
 package com.github.noonmaru.psychics.util
 
 import com.github.noonmaru.tap.fake.FakeEntity
+import com.github.noonmaru.tap.fake.FakeServer
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Entity
-import com.github.noonmaru.tap.fake.FakeManager as TapFakeManager
 
-class FakeManager internal constructor(internal val handle: TapFakeManager) {
+class FakeManager internal constructor(internal val handle: FakeServer) {
 
     init {
         for (player in Bukkit.getOnlinePlayers()) {
@@ -32,7 +32,7 @@ class FakeManager internal constructor(internal val handle: TapFakeManager) {
     }
 
     fun createFake(loc: Location, type: Class<out Entity>): FakeEntity {
-        return handle.createFakeEntity(loc, type)
+        return handle.spawnEntity(loc, type)
     }
 
 }

@@ -20,10 +20,10 @@ package com.github.noonmaru.psychics
 import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import com.github.noonmaru.psychics.util.FakeManager
 import com.github.noonmaru.tap.event.EntityEventManager
+import com.github.noonmaru.tap.fake.FakeServer
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.logging.Logger
-import com.github.noonmaru.tap.fake.FakeManager as TapFakeManager
 
 object Psychics {
 
@@ -45,7 +45,7 @@ object Psychics {
     internal fun initialize(plugin: PsychicPlugin) {
         logger = plugin.logger
         entityEventBus = EntityEventManager(plugin)
-        fakeManager = FakeManager(TapFakeManager())
+        fakeManager = FakeManager(FakeServer.create(plugin))
 
         val dir = plugin.dataFolder
 

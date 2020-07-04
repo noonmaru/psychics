@@ -26,6 +26,6 @@ class Scheduler internal constructor(val esperManager: EsperManager, val fakeMan
             esper.psychic?.update()
         }
 
-        fakeManager.handle.run()
+        fakeManager.handle.update()
     }
 }

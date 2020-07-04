@@ -35,7 +35,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8")) //kotlin
     implementation("junit:junit:4.12")
     implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
-    implementation("com.comphenix.protocol:ProtocolLib:4.6.0")
+    implementation("com.comphenix.protocol:ProtocolLib:4.5.0")
     implementation("com.github.noonmaru:tap:2.6-dev")
 }
 
@@ -59,7 +59,7 @@ tasks {
     }
     create<Copy>("distJar") {
         from(jar)
-        into("W:\\Servers\\naruto\\plugins")
+        into("W:\\Servers\\psychics-1.16.1\\plugins")
     }
 }
 
