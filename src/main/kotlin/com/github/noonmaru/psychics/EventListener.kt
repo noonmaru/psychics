@@ -17,22 +17,22 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.util.FakeManager
+import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
-class EventListener internal constructor(private val mainFakeManager: FakeManager) : Listener {
+class EventListener internal constructor(private val fakeEntityServer: FakeEntityServer) : Listener {
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
-        mainFakeManager.handle.addPlayer(event.player)
+        fakeEntityServer.addPlayer(event.player)
     }
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        mainFakeManager.handle.removePlayer(event.player)
+        fakeEntityServer.removePlayer(event.player)
     }
 
 }

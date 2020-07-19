@@ -18,9 +18,8 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.plugin.PsychicPlugin
-import com.github.noonmaru.psychics.util.FakeManager
 import com.github.noonmaru.tap.event.EntityEventManager
-import com.github.noonmaru.tap.fake.FakeServer
+import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.logging.Logger
@@ -33,7 +32,7 @@ object Psychics {
     lateinit var entityEventBus: EntityEventManager
         private set
 
-    lateinit var fakeManager: FakeManager
+    lateinit var fakeEntityServer: FakeEntityServer
         private set
 
     lateinit var storage: PsychicStorage
@@ -45,7 +44,7 @@ object Psychics {
     internal fun initialize(plugin: PsychicPlugin) {
         logger = plugin.logger
         entityEventBus = EntityEventManager(plugin)
-        fakeManager = FakeManager(FakeServer.create(plugin))
+        fakeEntityServer = FakeEntityServer.create(plugin)
 
         val dir = plugin.dataFolder
 
@@ -53,8 +52,8 @@ object Psychics {
         esperManager = EsperManager(plugin, File(dir, "espers"))
 
         plugin.server.apply {
-            scheduler.runTaskTimer(plugin, Scheduler(esperManager, fakeManager), 0L, 1L)
-            pluginManager.registerEvents(EventListener(fakeManager), plugin)
+            scheduler.runTaskTimer(plugin, Scheduler(esperManager, fakeEntityServer), 0L, 1L)
+            pluginManager.registerEvents(EventListener(fakeEntityServer), plugin)
         }
     }
 }

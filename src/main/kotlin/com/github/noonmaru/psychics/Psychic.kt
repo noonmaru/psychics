@@ -20,6 +20,7 @@ package com.github.noonmaru.psychics
 import com.github.noonmaru.psychics.task.PsychicScheduler
 import com.github.noonmaru.psychics.util.currentTicks
 import com.github.noonmaru.tap.event.RegisteredEntityListener
+import com.github.noonmaru.tap.fake.FakeProjectileManager
 import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
 import org.bukkit.Bukkit
@@ -34,12 +35,10 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.util.Vector
 import kotlin.math.max
 import kotlin.math.min
 
 class Psychic internal constructor(val spec: PsychicSpec) {
-
     var prevMana: Double = 0.0
 
     var mana: Double = 0.0
@@ -59,7 +58,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
     private val scheduler = PsychicScheduler()
 
-    private val projectiles = ProjectileManager()
+    private val projectileManager = FakeProjectileManager()
 
     lateinit var esper: Esper
         internal set
@@ -170,7 +169,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
 
         playerListeners.clear()
         scheduler.cancelAll()
-        projectiles.removeAll()
+        projectileManager.clear()
     }
 
     fun registerPlayerEvents(listener: Listener) {
@@ -191,10 +190,10 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         scheduler.runTaskTimer(runnable, delay, period)
     }
 
-    fun launch(projectile: Projectile, spawn: Location, vector: Vector) {
+    fun launch(location: Location, projectile: PsychicProjectile) {
         checkState()
-        projectile.init(this, spawn, vector)
-        projectiles.add(projectile)
+
+        projectileManager.launch(location, projectile)
     }
 
     fun checkState() {
@@ -205,7 +204,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         regenMana()
 
         scheduler.run()
-        projectiles.updateAll()
+        projectileManager.update()
 
         channeling?.run {
 

@@ -12,27 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
-package com.github.noonmaru.psychics.util
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.tap.fake.FakeEntity
-import com.github.noonmaru.tap.fake.FakeServer
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.entity.Entity
+import com.github.noonmaru.tap.fake.FakeProjectile
 
-class FakeManager internal constructor(internal val handle: FakeServer) {
-
-    init {
-        for (player in Bukkit.getOnlinePlayers()) {
-            handle.addPlayer(player)
-        }
-    }
-
-    fun createFake(loc: Location, type: Class<out Entity>): FakeEntity {
-        return handle.spawnEntity(loc, type)
-    }
-
+open class PsychicProjectile(maxTicks: Int, range: Double) : FakeProjectile(maxTicks, range) {
+    lateinit var ability: Ability
+        internal set
 }

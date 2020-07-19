@@ -26,6 +26,7 @@ import com.github.noonmaru.tap.config.RangeDouble
 import com.github.noonmaru.tap.config.RangeInt
 import com.google.common.collect.ImmutableList
 import org.bukkit.ChatColor
+import org.bukkit.Location
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 import java.io.File
@@ -193,6 +194,14 @@ abstract class Ability {
         }
 
         return null
+    }
+
+    open fun launch(location: Location, projectile: PsychicProjectile) {
+        checkState()
+        projectile.checkState()
+
+        projectile.ability = this
+        psychic.launch(location, projectile)
     }
 
 }

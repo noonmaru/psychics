@@ -17,15 +17,17 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.util.FakeManager
+import com.github.noonmaru.tap.fake.FakeEntityServer
 
-class Scheduler internal constructor(val esperManager: EsperManager, val fakeManager: FakeManager) : Runnable {
+
+class Scheduler internal constructor(val esperManager: EsperManager, val fakeEntityServer: FakeEntityServer) :
+    Runnable {
 
     override fun run() {
         for (esper in esperManager.getEspers()) {
             esper.psychic?.update()
         }
 
-        fakeManager.handle.update()
+        fakeEntityServer.update()
     }
 }

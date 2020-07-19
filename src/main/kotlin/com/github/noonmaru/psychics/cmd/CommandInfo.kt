@@ -28,6 +28,7 @@ import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
+import net.md_5.bungee.api.chat.hover.content.Text
 import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -75,7 +76,7 @@ class CommandInfo : CommandComponent {
                 color = ChatColor.GOLD
                 isUnderlined = true
                 isBold = true
-                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, spec.info())
+                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(spec.info()))
             }
         }
 
@@ -87,7 +88,7 @@ class CommandInfo : CommandComponent {
             list += TextComponent("\n\n - ${spec.displayName}").apply {
                 color = ChatColor.RED
                 isBold = true
-                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, spec.info())
+                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(spec.info()))
             }
         }
 
