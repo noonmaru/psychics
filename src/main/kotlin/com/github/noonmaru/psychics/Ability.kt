@@ -203,11 +203,12 @@ abstract class Ability {
         return null
     }
 
-    open fun launch(location: Location, projectile: PsychicProjectile) {
+    open fun launch(projectile: PsychicProjectile, location: Location, velocity: Vector? = null) {
         checkState()
         projectile.checkState()
 
         projectile.ability = this
+        velocity?.let { projectile.velocity = it }
         psychic.launch(location, projectile)
     }
 
