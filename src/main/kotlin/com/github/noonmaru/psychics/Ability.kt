@@ -17,6 +17,8 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.damage.DamageType
+import com.github.noonmaru.psychics.damage.getProtection
 import com.github.noonmaru.psychics.util.currentTicks
 import com.github.noonmaru.psychics.util.findString
 import com.github.noonmaru.psychics.util.processTemplatesAll
@@ -27,9 +29,14 @@ import com.github.noonmaru.tap.config.RangeInt
 import com.google.common.collect.ImmutableList
 import org.bukkit.ChatColor
 import org.bukkit.Location
+import org.bukkit.attribute.Attribute
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.entity.LivingEntity
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import java.io.File
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Ability.jar의 정보를 기술하는 클래스입니다.
@@ -204,10 +211,48 @@ abstract class Ability {
         psychic.launch(location, projectile)
     }
 
+    fun damage(target: LivingEntity, damageType: DamageType, damage: Double, knockBack: Double) {
+        checkState()
+
+        val armor = target.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
+        val armorTough = target.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
+        val protection = target.getProtection(damageType.protection)
+
+        val damageByArmor = 1.0 - min(20.0, max(armor / 5.0, armor - damage / (2.0 + armorTough / 4.0))) / 25.0
+        val damageByProtection = 1.0 - protection / 50.0
+
+        val actualDamage = damage * damageByArmor * damageByProtection
+
+        val player = esper.player
+
+        target.killer = player
+        target.damage(actualDamage)
+
+        // knockBack
+        val damagerLocation = player.location
+        val targetLocation = target.location
+
+        var force = knockBack * 0.5
+        val deltaX = damagerLocation.x - targetLocation.x
+        val deltaZ = damagerLocation.z - targetLocation.z
+
+        target.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.let { force *= 1.0 - it.value }
+
+        if (force > 0.0) {
+            val velocity = target.velocity
+            val knockBackVelocity = Vector(deltaX, 0.0, deltaZ).normalize().multiply(force)
+            val newVelocity = Vector(
+                velocity.x / 2.0 - knockBackVelocity.x,
+                if (target.isOnGround) min(0.4, velocity.y / 2.0 + force) else velocity.y,
+                velocity.z / 2.0 - knockBackVelocity.z
+            )
+
+            target.velocity = newVelocity
+        }
+    }
 }
 
 abstract class CastableAbility : Ability() {
-
     var targeter: (() -> Any?)? = null
 
     override fun test(): Boolean {
@@ -215,7 +260,6 @@ abstract class CastableAbility : Ability() {
     }
 
     open fun tryCast(): Boolean {
-
         if (test()) {
             val targeter = this.targeter
 
@@ -234,7 +278,6 @@ abstract class CastableAbility : Ability() {
     }
 
     protected fun cast(channelTicks: Int, target: Any? = null) {
-
         checkState()
 
         if (channelTicks > 0) {
@@ -247,5 +290,4 @@ abstract class CastableAbility : Ability() {
     abstract fun onCast(target: Any?)
 
     open fun onInterrupt(target: Any?) {}
-
 }
