@@ -17,9 +17,33 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.tap.ref.UpstreamReference
+import org.bukkit.Bukkit
+import org.bukkit.entity.Entity
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.scoreboard.Team
+import java.util.function.Predicate
 
-class Esper(val player: Player) {
+class Esper(p: Player) {
+    val playerRef = UpstreamReference(p)
+
+    val player: Player
+        get() = playerRef.get()
+
+    private val targetFilter: TargetFilter
+        get() {
+            val player = player
+            val team = Bukkit.getScoreboardManager().mainScoreboard.getEntryTeam(player.name)
+
+            return TargetFilter(player, team)
+        }
+
+    val hostileFilter: Predicate<Entity>
+        get() = targetFilter
+
+    val friendlyFilter: Predicate<Entity>
+        get() = targetFilter.apply { setFriendly() }
 
     var psychic: Psychic? = null
         private set
@@ -42,4 +66,40 @@ class Esper(val player: Player) {
         psychic?.unregister()
     }
 
+    private class TargetFilter(
+        private val player: Player,
+        private val team: Team?
+    ) : Predicate<Entity> {
+        private var friendly = false
+
+        internal fun setFriendly() {
+            friendly = true
+        }
+
+        override fun test(entity: Entity): Boolean {
+            if (entity is LivingEntity) {
+                val player = this.player
+
+                if (entity === player) return false
+                if (entity === player.vehicle) return false
+                if (entity.vehicle === player) return false
+
+                var isFriendlyEntity = false
+
+                if (entity is Player) {
+                    val team = team
+
+                    if (team != null && team.hasEntry(entity.name))
+                        isFriendlyEntity = true
+                }
+
+                if (friendly) return isFriendlyEntity
+
+                return !isFriendlyEntity
+            }
+
+            return false
+        }
+    }
 }
+
