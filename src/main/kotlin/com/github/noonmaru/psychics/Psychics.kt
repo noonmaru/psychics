@@ -25,7 +25,6 @@ import java.io.File
 import java.util.logging.Logger
 
 object Psychics {
-
     lateinit var logger: Logger
         private set
 

@@ -209,7 +209,7 @@ abstract class Ability {
 
         projectile.ability = this
         velocity?.let { projectile.velocity = it }
-        psychic.launch(location, projectile)
+        psychic.launch(projectile, location)
     }
 
     fun damage(target: LivingEntity, damageType: DamageType, damage: Double, knockBack: Double) {

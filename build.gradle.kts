@@ -36,7 +36,7 @@ dependencies {
     implementation("junit:junit:4.12")
     implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
     implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    implementation("com.github.noonmaru:tap:2.8")
+    implementation("com.github.noonmaru:tap:2.8.1")
 }
 
 tasks {

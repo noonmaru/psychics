@@ -17,9 +17,14 @@
 
 package com.github.noonmaru.psychics.damage
 
+import org.bukkit.Location
+import org.bukkit.attribute.Attribute
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.LivingEntity
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
+import kotlin.math.max
 import kotlin.math.min
 
 fun ItemStack.getProtection(enchantment: Enchantment?): Int {
@@ -55,4 +60,49 @@ fun LivingEntity.getProtection(enchantment: Enchantment?): Int {
     }
 
     return min(40, protection)
+}
+
+fun LivingEntity.damage(
+    type: DamageType,
+    damage: Double,
+    source: Player? = null,
+    knockBackLocation: Location? = source?.location,
+    knockBack: Double = 0.0
+) {
+    val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
+    val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
+    val protection = getProtection(type.protection)
+
+    val damageByArmor = 1.0 - min(20.0, max(armor / 5.0, armor - damage / (2.0 + armorTough / 4.0))) / 25.0
+    val damageByProtection = 1.0 - protection / 50.0
+
+    val actualDamage = damage * damageByArmor * damageByProtection
+
+    if (source != null)
+        killer = source
+
+    // knockBack
+    if (knockBackLocation != null && knockBack > 0.0) {
+        val targetLocation = location
+
+        var force = knockBack * 0.5
+        val deltaX = knockBackLocation.x - targetLocation.x
+        val deltaZ = knockBackLocation.z - targetLocation.z
+
+        getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.let { force *= 1.0 - it.value }
+
+        if (force > 0.0) {
+            val velocity = velocity
+            val knockBackVelocity = Vector(deltaX, 0.0, deltaZ).normalize().multiply(force)
+            val newVelocity = Vector(
+                velocity.x / 2.0 - knockBackVelocity.x,
+                if (isOnGround) min(0.4, velocity.y / 2.0 + force) else velocity.y,
+                velocity.z / 2.0 - knockBackVelocity.z
+            )
+
+            this.velocity = newVelocity
+        }
+    }
+
+    damage(actualDamage)
 }

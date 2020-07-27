@@ -28,6 +28,7 @@ import org.bukkit.Location
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -39,8 +40,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Psychic internal constructor(val spec: PsychicSpec) {
-    var prevMana: Double = 0.0
-
     var mana: Double = 0.0
 
     var manaRegenPerTick: Double = spec.manaRegenPerSec / 20.0
@@ -96,8 +95,13 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         manaBar = if (spec.mana > 0) Bukkit.createBossBar(null, BarColor.BLUE, BarStyle.SOLID) else null
     }
 
+    // onInitialize
+    // onRegister
+    // onLoad
+    // onEnable
+
     internal fun register(esper: Esper) {
-        Preconditions.checkState(!this::esper.isInitialized, "Already registered $this")
+        require(!this::esper.isInitialized) { "Already registered $this" }
 
         this.esper = esper
         this.valid = true
@@ -172,6 +176,14 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         projectileManager.clear()
     }
 
+    internal fun load(config: YamlConfiguration) {
+
+    }
+
+    internal fun save(config: YamlConfiguration) {
+
+    }
+
     fun registerPlayerEvents(listener: Listener) {
         checkState()
 
@@ -190,7 +202,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
         scheduler.runTaskTimer(runnable, delay, period)
     }
 
-    fun launch(location: Location, projectile: PsychicProjectile) {
+    internal fun launch(projectile: PsychicProjectile, location: Location) {
         checkState()
 
         projectileManager.launch(location, projectile)
@@ -221,10 +233,7 @@ class Psychic internal constructor(val spec: PsychicSpec) {
             }
         }
 
-        if (this.prevMana != this.mana) {
-            this.prevMana = this.mana
-            manaBar?.progress = this.mana / this.spec.mana
-        }
+        manaBar?.progress = this.mana / this.spec.mana
 
         esper.player.let { player ->
             val ability = getAbilityByWand(player.inventory.itemInMainHand)

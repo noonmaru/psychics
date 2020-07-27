@@ -19,6 +19,7 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import org.bukkit.Bukkit
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -28,12 +29,13 @@ import org.bukkit.event.player.PlayerQuitEvent
 import java.io.File
 import java.util.*
 
-class EsperManager internal constructor(plugin: PsychicPlugin, private val dir: File) {
-
+class EsperManager internal constructor(
+    plugin: PsychicPlugin,
+    private val dataFolder: File
+) {
     private val espers = IdentityHashMap<Player, Esper>(Bukkit.getMaxPlayers())
 
     init {
-
         for (player in Bukkit.getOnlinePlayers()) {
             espers[player] = Esper(player)
         }
@@ -61,5 +63,13 @@ class EsperManager internal constructor(plugin: PsychicPlugin, private val dir: 
 
     fun getEspers(): Collection<Esper> {
         return espers.values
+    }
+
+    fun save(esper: Esper, config: YamlConfiguration) {
+
+    }
+
+    fun load(esper: Esper): YamlConfiguration {
+
     }
 }

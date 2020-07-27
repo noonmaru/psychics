@@ -19,13 +19,14 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.tap.ref.UpstreamReference
 import org.bukkit.Bukkit
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.scoreboard.Team
 import java.util.function.Predicate
 
-class Esper(p: Player) {
+class Esper(private val manager: EsperManager, p: Player) {
     val playerRef = UpstreamReference(p)
 
     val player: Player
@@ -48,7 +49,7 @@ class Esper(p: Player) {
     var psychic: Psychic? = null
         private set
 
-    var valid = false
+    var valid = true
 
     fun applyPsychic(psychicSpec: PsychicSpec?): Psychic? {
         this.psychic?.unregister()
@@ -58,6 +59,27 @@ class Esper(p: Player) {
         this.psychic = psychic
 
         return psychic
+    }
+
+    companion object {
+        const val CONFIG_PSYCHIC = "psychic"
+    }
+
+    fun save() {
+        if (!valid) return
+
+        val config = YamlConfiguration()
+        config.set("player-name", player.name)
+        psychic?.save(config.createSection(CONFIG_PSYCHIC))
+        manager.save(this, config)
+    }
+
+    internal fun load() {
+        val config = manager.load(this)
+
+        config.getConfigurationSection(CONFIG_PSYCHIC)?.let { section ->
+
+        }
     }
 
     internal fun destroy() {
