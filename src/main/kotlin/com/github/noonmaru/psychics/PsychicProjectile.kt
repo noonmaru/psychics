@@ -19,7 +19,7 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.tap.fake.FakeProjectile
 
-open class PsychicProjectile(maxTicks: Int, range: Double) : FakeProjectile(maxTicks, range) {
-    lateinit var ability: Ability
+class PsychicProjectile(maxTicks: Int, range: Double) : FakeProjectile(maxTicks, range) {
+    lateinit var psychic: Psychic
         internal set
 }

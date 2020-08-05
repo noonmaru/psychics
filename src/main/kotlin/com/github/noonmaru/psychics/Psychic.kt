@@ -12,297 +12,234 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.task.PsychicScheduler
-import com.github.noonmaru.psychics.util.currentTicks
+import com.github.noonmaru.psychics.task.PsychicTask
+import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.github.noonmaru.tap.fake.FakeProjectileManager
-import com.google.common.base.Preconditions
+import com.github.noonmaru.tap.ref.UpstreamReference
 import com.google.common.collect.ImmutableList
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.attribute.Attribute
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
-import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
-import org.bukkit.event.player.PlayerInteractEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import kotlin.math.max
-import kotlin.math.min
 
-class Psychic internal constructor(val spec: PsychicSpec) {
-    var mana: Double = 0.0
+class Psychic(
+    val concept: PsychicConcept
+) {
+    var mana = 0.0
 
-    var manaRegenPerTick: Double = spec.manaRegenPerSec / 20.0
+    private var ticks = 0L
 
-    var prevRegenManaTicks: Int = 0
+    val abilities: List<Ability<*>>
 
-    private val manaBar: BossBar?
-
-    private val castingBar =
-        Bukkit.createBossBar("casting-bar", BarColor.WHITE, BarStyle.SOLID).apply { isVisible = false }
-
-    val abilities: List<Ability>
-
-    internal var channeling: Channel? = null
-
-    private val scheduler = PsychicScheduler()
-
-    private val projectileManager = FakeProjectileManager()
-
-    lateinit var esper: Esper
-        internal set
-
-    private val playerListeners = ArrayList<RegisteredEntityListener>()
-
-    var enabled: Boolean = false
-        set(value) {
-            checkState()
-
-            if (field != value) {
-                field = value
-
-                abilities.forEach { it.runCatching { if (value) onEnable() else onDisable() } }
-            }
-        }
-
-    var valid: Boolean = false
+    var channeling: Channel? = null
         private set
 
+    var enabled = false
+        private set
+
+    var valid = true
+        private set
+
+    private lateinit var esperRef: UpstreamReference<Esper>
+
+    val esper: Esper
+        get() = esperRef.get()
+
+    private var manaBar: BossBar? = null
+
+    private lateinit var castingBar: BossBar
+
+    private lateinit var scheduler: PsychicScheduler
+
+    private lateinit var projectileManager: FakeProjectileManager
+
+    private lateinit var listeners: ArrayList<RegisteredEntityListener>
+
     init {
-        abilities = spec.abilities.let {
-            val list = ArrayList<Ability>()
-            for (abilitySpec in it) {
-                list += abilitySpec.abilityClass.newInstance().apply {
-                    this.spec = abilitySpec
-                    this.psychic = this@Psychic
-                    onInitialize()
-                }
+        abilities = ImmutableList.copyOf(concept.abilityConcepts.map { concept ->
+            concept.createAbilityInstance().apply {
+                initPsychic(this@Psychic)
+                runCatching { onInitialize() }
             }
-
-            ImmutableList.copyOf(list)
-        }
-
-        manaBar = if (spec.mana > 0) Bukkit.createBossBar(null, BarColor.BLUE, BarStyle.SOLID) else null
+        })
     }
 
-    // onInitialize
-    // onRegister
-    // onLoad
-    // onEnable
+    internal fun attach(esper: Esper) {
+        require(!this::esperRef.isInitialized) { "Cannot redefine epser" }
 
-    internal fun register(esper: Esper) {
-        require(!this::esper.isInitialized) { "Already registered $this" }
+        esperRef = UpstreamReference(esper)
+        castingBar = Bukkit.createBossBar(null, BarColor.WHITE, BarStyle.SOLID)
+        scheduler = PsychicScheduler()
+        projectileManager = FakeProjectileManager()
+        listeners = arrayListOf()
 
-        this.esper = esper
-        this.valid = true
-        this.prevRegenManaTicks = currentTicks
-        this.manaBar?.addPlayer(esper.player)
-        this.castingBar.addPlayer(esper.player)
-
-        registerPlayerEvents(WandListener())
+        if (concept.mana > 0.0) {
+            manaBar = Bukkit.createBossBar(null, concept.manaColor, BarStyle.SEGMENTED_10)
+        }
 
         for (ability in abilities) {
-            try {
-                ability.onRegister()
-            } catch (t: Throwable) {
-                Psychics.logger.info("Failed to register $ability")
-                t.printStackTrace()
-            }
-        }
-
-        playerListeners.trimToSize()
-    }
-
-    inner class WandListener : Listener {
-        @EventHandler
-        fun onInteract(event: PlayerInteractEvent) {
-            if (event.action != Action.PHYSICAL && event.hand == EquipmentSlot.HAND) {
-                event.item?.let { castByWand(it) }
-            }
-        }
-
-        @EventHandler
-        fun onInteractEntity(event: PlayerInteractEntityEvent) {
-            castByWand(event.player.inventory.itemInMainHand)
+            ability.runCatching { onAttach() }
         }
     }
 
-    private fun castByWand(item: ItemStack) {
-        if (enabled) {
-            getAbilityByWand(item)?.let { ability ->
-                if (ability is CastableAbility) {
-                    ability.tryCast()
-                }
-            }
+    internal fun detach() {
+        for (ability in abilities) {
+            ability.runCatching { onDetach() }
         }
+        esperRef.clear()
     }
 
-    fun getAbilityByWand(item: ItemStack): Ability? {
-        return abilities.find { ability -> ability.spec._wand?.isSimilar(item) ?: false }
-    }
-
-    internal fun unregister() {
+    fun enable() {
         checkState()
 
-        this.valid = false
+        if (enabled) return
+
+        enabled = true
+        ticks = Tick.currentTicks
 
         for (ability in abilities) {
-            try {
-                ability.onUnregister()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-            }
+            ability.runCatching { onEnable() }
         }
+    }
 
-        manaBar?.removeAll()
-        castingBar.removeAll()
+    fun disable() {
+        checkState()
 
-        for (playerListener in playerListeners) {
-            playerListener.unregister()
-        }
+        if (!enabled) return
 
-        playerListeners.clear()
+        enabled = false
+
+        castingBar.isVisible = false
         scheduler.cancelAll()
         projectileManager.clear()
+        listeners.run {
+            for (registeredEntityListener in this) {
+                registeredEntityListener.unregister()
+            }
+            clear()
+        }
+
+        for (ability in abilities) {
+            ability.runCatching { onDisable() }
+        }
     }
 
-    internal fun load(config: YamlConfiguration) {
-
-    }
-
-    internal fun save(config: YamlConfiguration) {
-
-    }
-
-    fun registerPlayerEvents(listener: Listener) {
+    fun runTask(runnable: Runnable, delay: Long): PsychicTask {
         checkState()
+        checkEnabled()
 
-        playerListeners += Psychics.entityEventBus.registerEvents(esper.player, listener)
+        return scheduler.runTask(runnable, delay)
     }
 
-    fun runTask(runnable: Runnable, delay: Long) {
+    fun runTaskTimer(runnable: Runnable, delay: Long, period: Long): PsychicTask {
         checkState()
+        checkEnabled()
 
-        scheduler.runTask(runnable, delay)
+        return scheduler.runTaskTimer(runnable, delay, period)
     }
 
-    fun runTaskTimer(runnable: Runnable, delay: Long, period: Long) {
+    fun launchProjectile(location: Location, projectile: PsychicProjectile) {
         checkState()
-
-        scheduler.runTaskTimer(runnable, delay, period)
-    }
-
-    internal fun launch(projectile: PsychicProjectile, location: Location) {
-        checkState()
+        checkEnabled()
 
         projectileManager.launch(location, projectile)
     }
 
-    fun checkState() {
-        Preconditions.checkState(valid, "Invalid $this")
+    internal fun startChannel(ability: ActiveAbility<*>, castingTicks: Int, target: Any?) {
+        interruptChannel()
+
+        channeling = Channel(ability, castingTicks, target)
+        castingBar.apply {
+            setTitle(ability.concept.displayName)
+            progress = 0.0
+            isVisible = true
+        }
+    }
+
+    fun interruptChannel() {
+        channeling?.let { channel ->
+            channel.interrupt()
+            channeling = null
+        }
+    }
+
+    internal fun destroy() {
+        disable()
+        detach()
+        valid = false
     }
 
     internal fun update() {
-        regenMana()
+        val elapsedTicks = Tick.currentTicks - ticks
+
+        regenMana(elapsedTicks)
+        regenHealth(elapsedTicks)
 
         scheduler.run()
         projectileManager.update()
 
-        channeling?.run {
+        channeling?.let { channel ->
+            val remainTicks = channel.remainTicks
 
-            val current = currentTicks
-            val remain = max(0, channelTick - current)
+            castingBar.progress = 1.0 - remainTicks.toDouble() / channel.ability.concept.castingTicks.toDouble()
 
-            castingBar.progress = 1.0 - remain.toDouble() / ability.spec.channelDuration
-
-            if (remain <= 0) {
+            if (remainTicks <= 0) {
                 castingBar.setTitle(null)
                 castingBar.isVisible = false
                 channeling = null
-                cast()
-            }
-        }
-
-        manaBar?.progress = this.mana / this.spec.mana
-
-        esper.player.let { player ->
-            val ability = getAbilityByWand(player.inventory.itemInMainHand)
-
-            if (ability != null) {
-                player.sendActionBar(ability.createStatusText() ?: " ")
-            } else {
-                player.sendActionBar(" ")
+                channel.cast()
             }
         }
     }
 
-    private fun regenMana() {
-        if (manaRegenPerTick > 0) {
+    private fun regenMana(elapsedTicks: Long) {
+        mana = (mana + concept.manaRegenPerTick * elapsedTicks).coerceIn(0.0, concept.mana)
+    }
 
-            val current = currentTicks
-            val elapsed = current - prevRegenManaTicks
-            prevRegenManaTicks = current
+    private fun regenHealth(elapsedTicks: Long) {
+        val player = esper.player
+        val health = player.health
 
-            val max = spec.mana
-            if (mana < max) {
-                val newMana = min(mana + manaRegenPerTick * elapsed, max)
-
-                if (mana != newMana) {
-                    mana = newMana
-                    manaBar?.progress = mana / spec.mana
-                }
-            }
+        if (health > 0.0) {
+            val maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 20.0
+            player.health =
+                (player.health + concept.healthRegenPerTick * elapsedTicks).coerceIn(
+                    0.0,
+                    maxHealth + concept.healthBonus
+                )
         }
     }
 
-    fun consumeMana(amount: Double): Boolean {
-        if (mana > amount) {
-            mana -= amount
-
-            return true
-        }
-
-        return false
+    fun checkState() {
+        require(valid) { "Invalid Psychic@${System.identityHashCode(this).toString(16)}" }
     }
 
-    internal fun startChannel(ability: CastableAbility, ticks: Int, target: Any? = null) {
-        channeling = Channel(ability, ticks, target)
-        castingBar.setTitle(ability.spec.displayName)
-        castingBar.progress = 0.0
-        castingBar.isVisible = true
+    fun checkEnabled() {
+        require(enabled) { "Disabled Psychic@${System.identityHashCode(this).toString(16)}" }
+    }
+}
+
+class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Int, val target: Any? = null) {
+    internal val channelTick = Tick.currentTicks + castingTicks
+
+    val remainTicks
+        get() = max(0, channelTick - Tick.currentTicks)
+
+    internal fun cast() {
+        ability.runCatching { onCast(target) }
     }
 
-    internal fun stopChannel(): Channel? {
-        return channeling?.run {
-            interrupt()
-            channeling = null
-            this
-        }
-    }
-
-    inner class Channel(val ability: CastableAbility, ticks: Int, val target: Any? = null) {
-
-        internal val channelTick = currentTicks + ticks
-
-        val remainTicks
-            get() = max(channelTick - currentTicks, 0)
-
-        internal fun cast() {
-            runCatching { ability.onCast(target) }
-        }
-
-        internal fun interrupt() {
-            runCatching { ability.onInterrupt(target) }
-        }
+    internal fun interrupt() {
+        ability.runCatching { onInterrupt(target) }
     }
 }

@@ -12,22 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.tap.fake.FakeEntityServer
+import net.md_5.bungee.api.ChatColor
 
 
-class Scheduler internal constructor(val esperManager: EsperManager, val fakeEntityServer: FakeEntityServer) :
-    Runnable {
+enum class AbilityType(
+    val color: ChatColor
+) {
+    PASSIVE(ChatColor.AQUA),
+    ACTIVE(ChatColor.RED),
+    TOGGLE(ChatColor.YELLOW);
 
-    override fun run() {
-        for (esper in esperManager.getEspers()) {
-            esper.psychic?.update()
-        }
-
-        fakeEntityServer.update()
+    override fun toString(): String {
+        return "$color$name"
     }
 }

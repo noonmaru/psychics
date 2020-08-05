@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics.loader
@@ -21,11 +21,10 @@ import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
-
 internal class AbilityClassLoader(
-    parent: ClassLoader,
     private val loader: AbilityLoader,
-    file: File
+    file: File,
+    parent: ClassLoader
 ) :
     URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
 

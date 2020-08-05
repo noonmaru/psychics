@@ -17,7 +17,7 @@
 
 package com.github.noonmaru.psychics.task
 
-import com.github.noonmaru.psychics.util.currentTicks
+import com.github.noonmaru.psychics.util.Tick
 import java.util.*
 import kotlin.math.max
 
@@ -30,7 +30,7 @@ class PsychicTask internal constructor(private val scheduler: PsychicScheduler, 
         internal const val DONE = -3L
     }
 
-    internal var nextRun: Long = currentTicks + max(0L, delay)
+    internal var nextRun: Long = Tick.currentTicks + max(0L, delay)
 
     internal var period: Long = 0L
 
@@ -53,7 +53,7 @@ class PsychicTask internal constructor(private val scheduler: PsychicScheduler, 
         period = CANCEL
 
         //256 tick 이상이면 큐에서 즉시 제거, 아닐경우 자연스럽게 제거
-        val remainTicks = nextRun - currentTicks
+        val remainTicks = nextRun - Tick.currentTicks
 
         if (remainTicks > 0xFF)
             scheduler.remove(this)
@@ -81,7 +81,7 @@ class PsychicScheduler : Runnable {
     }
 
     override fun run() {
-        val current = currentTicks
+        val current = Tick.currentTicks
 
         while (queue.isNotEmpty()) {
             val task = queue.peek()

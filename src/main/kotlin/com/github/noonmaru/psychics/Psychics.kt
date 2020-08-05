@@ -12,50 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.plugin.PsychicPlugin
-import com.github.noonmaru.tap.event.EntityEventManager
-import com.github.noonmaru.tap.fake.FakeEntityServer
-import org.bukkit.entity.Player
-import java.io.File
 import java.util.logging.Logger
 
 object Psychics {
+
     lateinit var logger: Logger
         private set
 
-    lateinit var entityEventBus: EntityEventManager
+    lateinit var psychicManager: PsychicManager
         private set
 
-    lateinit var fakeEntityServer: FakeEntityServer
-        private set
-
-    lateinit var storage: PsychicStorage
-        private set
-
-    lateinit var esperManager: EsperManager
-        private set
-
-    internal fun initialize(plugin: PsychicPlugin) {
-        logger = plugin.logger
-        entityEventBus = EntityEventManager(plugin)
-        fakeEntityServer = FakeEntityServer.create(plugin)
-
-        val dir = plugin.dataFolder
-
-        storage = PsychicStorage(File(dir, "abilities"), File(dir, "psychics"))
-        esperManager = EsperManager(plugin, File(dir, "espers"))
-
-        plugin.server.apply {
-            scheduler.runTaskTimer(plugin, Scheduler(esperManager, fakeEntityServer), 0L, 1L)
-            pluginManager.registerEvents(EventListener(fakeEntityServer), plugin)
-        }
+    fun initialize(logger: Logger, psychicManager: PsychicManager) {
+        this.logger = logger
+        this.psychicManager = psychicManager
     }
 }
-
-val Player.esper: Esper?
-    get() = Psychics.esperManager.getEsper(this)

@@ -12,264 +12,110 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.damage.DamageType
-import com.github.noonmaru.psychics.damage.getProtection
-import com.github.noonmaru.psychics.util.currentTicks
-import com.github.noonmaru.psychics.util.findString
-import com.github.noonmaru.psychics.util.processTemplatesAll
-import com.github.noonmaru.tap.config.Config
-import com.github.noonmaru.tap.config.Name
-import com.github.noonmaru.tap.config.RangeDouble
-import com.github.noonmaru.tap.config.RangeInt
-import com.google.common.collect.ImmutableList
-import org.bukkit.ChatColor
-import org.bukkit.Location
-import org.bukkit.attribute.Attribute
-import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.entity.LivingEntity
-import org.bukkit.inventory.ItemStack
-import org.bukkit.util.Vector
-import java.io.File
+import com.github.noonmaru.psychics.util.Tick
+import com.github.noonmaru.tap.ref.UpstreamReference
 import kotlin.math.max
-import kotlin.math.min
 
-/**
- * Ability.jar의 정보를 기술하는 클래스입니다.
- */
-class AbilityDescription internal constructor(config: ConfigurationSection) {
+abstract class Ability<T : AbilityConcept> {
 
-    val name = config.findString("name")
-
-    val main = config.findString("main")
-
-    val version = config.findString("version")
-
-    val authors: List<String> = ImmutableList.copyOf(config.getStringList("authors"))
-
-}
-
-/**
- * Ability.jar의 데이터 컨테이너입니다.
- */
-class AbilityModel internal constructor(
-    val file: File,
-    val description: AbilityDescription,
-    val classLoader: ClassLoader,
-    val specClass: Class<out AbilitySpec>
-)
-
-/**
- * 능력의 기본적인 정보를 기술하는 클래스입니다.
- *
- * 스탯이나 설명등 정보를 입력하세요
- */
-@Name("ability")
-abstract class AbilitySpec {
-
-    lateinit var model: AbilityModel
+    lateinit var concept: T
         private set
 
-    lateinit var psychicSpec: PsychicSpec
-
-    @Config
-    lateinit var displayName: String
-
-    @Config
-    var type: AbilityType = AbilityType.PASSIVE
-        protected set
-
-    @Config
-    @RangeInt(min = 0)
-    var cooldownTicks: Int = 0
-        protected set
-
-    @Config
-    @RangeInt(min = 0)
-    var cost: Double = 0.0
-        protected set
-
-    @Config
-    @RangeInt(min = 0)
-    var channelDuration: Int = 0
-        protected set
-
-    @Config
-    var channelInterruptible: Boolean = false
-        protected set
-
-    @Config
-    @RangeDouble(min = 0.0)
-    var range: Double = 0.0
-        protected set
-
-    @Config("wand", required = false)
-    internal var _wand: ItemStack? = null
-
-    var wand
-        get() = _wand?.clone()
-        protected set(value) {
-            _wand = value?.clone()
-        }
-
-    @Config
-    var description: List<String> = ImmutableList.of()
-        protected set
-
-    abstract val abilityClass: Class<out Ability>
-
-    internal fun initialize(
-        model: AbilityModel,
-        psychicSpec: PsychicSpec,
-        config: ConfigurationSection
-    ) {
-        this.model = model
-        this.psychicSpec = psychicSpec
-
-        if (CastableAbility::class.java.isAssignableFrom(abilityClass))
-            type = AbilityType.CASTING
-
-        description = ImmutableList.copyOf(description.processTemplatesAll(config))
-    }
-
-    open fun onInitialize() {}
-}
-
-enum class AbilityType {
-    MOVEMENT,
-    CASTING,
-    SPELL,
-    PASSIVE
-}
-
-/**
- *
- */
-abstract class Ability {
-
-    lateinit var spec: AbilitySpec
-        internal set
-
-    lateinit var psychic: Psychic
-        internal set
-
-    var cooldownTicks: Int = 0
+    var cooldownTicks: Long = 0
         get() {
-            return (field - currentTicks).coerceIn(0, Int.MAX_VALUE)
+            return max(0, field - Tick.currentTicks)
         }
         set(value) {
-            checkState()
-
-            field = currentTicks + value.coerceIn(0, Int.MAX_VALUE)
-            spec._wand?.let { psychic.esper.player.setCooldown(it.type, value) }
+            field = Tick.currentTicks + max(0L, value)
         }
 
-    val esper: Esper
+    private lateinit var psychicRef: UpstreamReference<Psychic>
+
+    val psychic: Psychic
+        get() = psychicRef.get()
+
+    val esper
         get() = psychic.esper
 
-    open fun onInitialize() {}
+    @Suppress("UNCHECKED_CAST")
+    internal fun initConcept(concept: AbilityConcept) {
+        this.concept = concept as T
+    }
 
-    open fun onRegister() {}
-
-    open fun onUnregister() {}
-
-    open fun onEnable() {}
-
-    open fun onDisable() {}
+    internal fun initPsychic(psychic: Psychic) {
+        this.psychicRef = UpstreamReference(psychic)
+    }
 
     open fun test(): Boolean {
-        return psychic.enabled && cooldownTicks == 0 && psychic.mana >= spec.cost
+        val psychic = psychic
+
+        return psychic.enabled && cooldownTicks == 0L && psychic.mana >= concept.cost
     }
+
+    /**
+     * 초기화 후 호출됩니다.
+     */
+    open fun onInitialize() {}
+
+    /**
+     * 플레이어에게 적용 후 호출됩니다.
+     */
+    open fun onAttach() {}
+
+    /**
+     * 플레이어로부터 해제 후 호출됩니다.
+     */
+    open fun onDetach() {}
+
+    /**
+     * 정보를 디스크에 저장 할 때 호출됩니다.
+     */
+    open fun onSave() {}
+
+    /**
+     * 정보를 디스크로부터 불러 올 때 호출됩니다.
+     */
+    open fun onLoad() {}
+
+    /**
+     * 능력이 활성화 될 때 호출됩니다.
+     */
+    open fun onEnable() {}
+
+    /**
+     * 능력이 비활성화 될 때 호출됩니다.
+     */
+    open fun onDisable() {}
 
     fun checkState() {
         psychic.checkState()
     }
 
-    internal fun createStatusText(): String? {
-        val cooldownTicks = this.cooldownTicks
-
-        if (cooldownTicks > 0) {
-            return "${ChatColor.AQUA}${ChatColor.BOLD}재사용 대기시간 ${ChatColor.RESET}${ChatColor.BOLD}${(cooldownTicks / 2) / 10.0}"
-        }
-
-        if (spec.cost > psychic.mana) {
-            return "${ChatColor.BLUE}마나가 부족합니다!"
-        }
-
-        return null
-    }
-
-    open fun launch(projectile: PsychicProjectile, location: Location, velocity: Vector? = null) {
-        checkState()
-        projectile.checkState()
-
-        projectile.ability = this
-        velocity?.let { projectile.velocity = it }
-        psychic.launch(projectile, location)
-    }
-
-    fun damage(target: LivingEntity, damageType: DamageType, damage: Double, knockBack: Double) {
-        checkState()
-
-        val armor = target.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
-        val armorTough = target.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
-        val protection = target.getProtection(damageType.protection)
-
-        val damageByArmor = 1.0 - min(20.0, max(armor / 5.0, armor - damage / (2.0 + armorTough / 4.0))) / 25.0
-        val damageByProtection = 1.0 - protection / 50.0
-
-        val actualDamage = damage * damageByArmor * damageByProtection
-
-        val player = esper.player
-
-        target.killer = player
-        target.damage(actualDamage)
-
-        // knockBack
-        val damagerLocation = player.location
-        val targetLocation = target.location
-
-        var force = knockBack * 0.5
-        val deltaX = damagerLocation.x - targetLocation.x
-        val deltaZ = damagerLocation.z - targetLocation.z
-
-        target.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.let { force *= 1.0 - it.value }
-
-        if (force > 0.0) {
-            val velocity = target.velocity
-            val knockBackVelocity = Vector(deltaX, 0.0, deltaZ).normalize().multiply(force)
-            val newVelocity = Vector(
-                velocity.x / 2.0 - knockBackVelocity.x,
-                if (target.isOnGround) min(0.4, velocity.y / 2.0 + force) else velocity.y,
-                velocity.z / 2.0 - knockBackVelocity.z
-            )
-
-            target.velocity = newVelocity
-        }
+    fun checkEnabled() {
+        psychic.checkEnabled()
     }
 }
 
-abstract class CastableAbility : Ability() {
+abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     var targeter: (() -> Any?)? = null
 
     override fun test(): Boolean {
         return psychic.channeling == null && super.test()
     }
 
-    open fun tryCast(): Boolean {
+    open fun tryCast(castingTicks: Int = concept.castingTicks, targeter: (() -> Any?)? = null): Boolean {
         if (test()) {
-            val targeter = this.targeter
-
             if (targeter != null) {
-                targeter.invoke()?.let {
-                    cast(spec.channelDuration, it)
-                }
+                val target = targeter.invoke() ?: return false
+
+                cast(castingTicks, target)
             } else {
-                cast(spec.channelDuration)
+                cast(castingTicks)
             }
 
             return true
@@ -278,11 +124,11 @@ abstract class CastableAbility : Ability() {
         return false
     }
 
-    protected fun cast(channelTicks: Int, target: Any? = null) {
+    protected fun cast(castingTicks: Int, target: Any? = null) {
         checkState()
 
-        if (channelTicks > 0) {
-            psychic.startChannel(this, channelTicks, target)
+        if (castingTicks > 0) {
+            psychic.startChannel(this, castingTicks, target)
         } else {
             onCast(target)
         }

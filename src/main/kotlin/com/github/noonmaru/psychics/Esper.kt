@@ -12,116 +12,65 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.tap.ref.UpstreamReference
-import org.bukkit.Bukkit
-import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.entity.Entity
-import org.bukkit.entity.LivingEntity
+import com.github.noonmaru.psychics.attribute.EsperAttribute
+import com.github.noonmaru.psychics.attribute.EsperStatistic
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import org.bukkit.scoreboard.Team
-import java.util.function.Predicate
+import java.lang.ref.WeakReference
 
-class Esper(private val manager: EsperManager, p: Player) {
-    val playerRef = UpstreamReference(p)
-
+class Esper(
+    player: Player
+) {
     val player: Player
-        get() = playerRef.get()
+        get() = requireNotNull(playerRef.get()) { "Cannot get reference as it has already been Garbage Collected" }
 
-    private val targetFilter: TargetFilter
-        get() {
-            val player = player
-            val team = Bukkit.getScoreboardManager().mainScoreboard.getEntryTeam(player.name)
-
-            return TargetFilter(player, team)
-        }
-
-    val hostileFilter: Predicate<Entity>
-        get() = targetFilter
-
-    val friendlyFilter: Predicate<Entity>
-        get() = targetFilter.apply { setFriendly() }
+    private val playerRef = WeakReference(player)
 
     var psychic: Psychic? = null
         private set
 
-    var valid = true
+    val isOnline
+        get() = playerRef.get() != null
 
-    fun applyPsychic(psychicSpec: PsychicSpec?): Psychic? {
-        this.psychic?.unregister()
-
-        val psychic = if (psychicSpec != null) Psychic(psychicSpec).apply { register(this@Esper) } else null
-
-        this.psychic = psychic
-
-        return psychic
-    }
-
-    companion object {
-        const val CONFIG_PSYCHIC = "psychic"
-    }
-
-    fun save() {
-        if (!valid) return
-
-        val config = YamlConfiguration()
-        config.set("player-name", player.name)
-        psychic?.save(config.createSection(CONFIG_PSYCHIC))
-        manager.save(this, config)
-    }
-
-    internal fun load() {
-        val config = manager.load(this)
-
-        config.getConfigurationSection(CONFIG_PSYCHIC)?.let { section ->
-
+    fun getAttribute(attr: EsperAttribute): Double {
+        return when (attr) {
+            EsperAttribute.ATTACK_DAMAGE -> TODO()
+            EsperAttribute.LEVEL -> player.level.toDouble()
+            EsperAttribute.DEFENSE -> player.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
+            EsperAttribute.HEALTH -> player.health
+            EsperAttribute.MANA -> psychic?.mana ?: 0.0
         }
     }
 
-    internal fun destroy() {
-        valid = false
+    fun getStatistic(stats: EsperStatistic): Double {
+        var ret = 0.0
 
-        psychic?.unregister()
-    }
+        for ((attr, ratio) in stats.stats) {
+            val value = getAttribute(attr)
 
-    private class TargetFilter(
-        private val player: Player,
-        private val team: Team?
-    ) : Predicate<Entity> {
-        private var friendly = false
-
-        internal fun setFriendly() {
-            friendly = true
+            ret += value * ratio
         }
 
-        override fun test(entity: Entity): Boolean {
-            if (entity is LivingEntity) {
-                val player = this.player
+        return ret
+    }
 
-                if (entity === player) return false
-                if (entity === player.vehicle) return false
-                if (entity.vehicle === player) return false
+    fun attachPsychic(concept: PsychicConcept) {
+        detachPsychic()
 
-                var isFriendlyEntity = false
+        this.psychic = concept.createInstance().apply {
+            attach(this@Esper)
+        }
+    }
 
-                if (entity is Player) {
-                    val team = team
-
-                    if (team != null && team.hasEntry(entity.name))
-                        isFriendlyEntity = true
-                }
-
-                if (friendly) return isFriendlyEntity
-
-                return !isFriendlyEntity
-            }
-
-            return false
+    fun detachPsychic() {
+        psychic?.let { psychic ->
+            this.psychic = null
+            psychic.destroy()
         }
     }
 }
-

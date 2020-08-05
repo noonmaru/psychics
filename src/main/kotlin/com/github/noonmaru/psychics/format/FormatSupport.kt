@@ -12,27 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
-package com.github.noonmaru.psychics
+package com.github.noonmaru.psychics.format
 
-import com.github.noonmaru.tap.fake.FakeEntityServer
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import java.text.DecimalFormat
 
-class EventListener internal constructor(private val fakeEntityServer: FakeEntityServer) : Listener {
 
-    @EventHandler
-    fun onJoin(event: PlayerJoinEvent) {
-        fakeEntityServer.addPlayer(event.player)
-    }
+private val DECIMAL_FORMAT = DecimalFormat("#.##")
+private val PERCENT_FORMAT = DecimalFormat("#.##%")
 
-    @EventHandler
-    fun onQuit(event: PlayerQuitEvent) {
-        fakeEntityServer.removePlayer(event.player)
-    }
+internal fun Number.decimalFormat(): String {
+    return DECIMAL_FORMAT.format(this)
+}
 
+internal fun Number.percentFormat(): String {
+    return PERCENT_FORMAT.format(this)
 }

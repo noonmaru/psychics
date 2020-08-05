@@ -23,8 +23,8 @@ enum class DamageType(
     val protection: Enchantment?,
     val i18Name: String
 ) {
-    MELEE(null, "근접"), // 보호
-    RANGED(Enchantment.PROTECTION_PROJECTILE, "원거리"), // 원거리 보호
-    FIRE(Enchantment.PROTECTION_FIRE, "화염"), // 화염 보호
-    BLAST(Enchantment.PROTECTION_EXPLOSIONS, "폭발"), // 폭발 보호
+    MELEE(null, "근접 피해"), // 보호
+    RANGED(Enchantment.PROTECTION_PROJECTILE, "원거리 피해"), // 원거리 보호
+    FIRE(Enchantment.PROTECTION_FIRE, "화염 피해"), // 화염 보호
+    BLAST(Enchantment.PROTECTION_EXPLOSIONS, "폭발 피해"), // 폭발 보호
 }

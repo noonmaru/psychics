@@ -17,61 +17,26 @@
 
 package com.github.noonmaru.psychics.plugin
 
+import com.github.noonmaru.psychics.PsychicManager
 import com.github.noonmaru.psychics.Psychics
-import com.github.noonmaru.psychics.cmd.CommandApply
-import com.github.noonmaru.psychics.cmd.CommandInfo
-import com.github.noonmaru.tap.command.command
 import org.bukkit.plugin.java.JavaPlugin
+import java.io.File
 
 /**
  * @author Noonmaru
  */
 class PsychicPlugin : JavaPlugin() {
 
-    companion object {
-        @JvmStatic
-        lateinit var instance: PsychicPlugin
-            private set
-    }
-
     override fun onEnable() {
-        instance = this
+        val psychicManager = PsychicManager(
+            File(dataFolder, "abilities"),
+            File(dataFolder, "psychics"),
+            File(dataFolder, "espers")
+        )
 
-        Psychics.initialize(this)
-        setupCommands()
+        Psychics.initialize(logger, psychicManager)
 
-        Psychics.storage.abilityModels.values.let { models ->
-            logger.info("Loaded abilities: ${models.joinToString { model -> model.description.name }}")
-        }
-
-        Psychics.storage.psychicSpecs.values.let { specs ->
-            logger.info("Loaded psychics: ${specs.joinToString { spec -> spec.name }}")
-        }
-
-        logger.info("HEROES ASSEMBLE!")
-    }
-
-    private fun setupCommands() {
-        command("psychics") {
-            help("help")
-            component("info") {
-                usage = "[Psychic]"
-                description = "능력 정보를 확인합니다."
-                CommandInfo()
-            }
-            component("apply") {
-                usage = "<Psychic> [Player...]"
-                description = "능력을 적용합니다."
-                CommandApply()
-            }
-        }
-    }
-
-    override fun onDisable() {
-        for (esper in Psychics.esperManager.getEspers()) {
-            esper.destroy()
-        }
-
-        Psychics.fakeEntityServer.shutdown()
+        psychicManager.loadAbilities()
+        psychicManager.loadPsychics()
     }
 }

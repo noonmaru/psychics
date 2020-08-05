@@ -12,28 +12,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
-package com.github.noonmaru.psychics.util
+package com.github.noonmaru.psychics
 
-import com.github.noonmaru.tap.template.processTemplates
+import com.google.common.collect.ImmutableList
 import org.bukkit.configuration.ConfigurationSection
 
-internal fun ConfigurationSection.findString(path: String): String {
-    return getString(path) ?: throw NullPointerException("Undefined $path")
-}
+class AbilityDescription(config: ConfigurationSection) {
+    val group: String = requireNotNull(config.getString("group")) { "group is not defined" }
 
-internal fun Iterable<String>.processTemplatesAll(config: ConfigurationSection): List<String> {
-    val list = ArrayList<String>(count())
+    val name: String = requireNotNull(config.getString("name")) { "name is not defined" }
 
-    forEach { s ->
-        s.runCatching {
-            list += processTemplates(config)
-        }.onFailure {
-            throw IllegalArgumentException("Failed to process templates for $s", it)
-        }
-    }
+    val id: String = "$group-$name"
 
-    return list
+    val main: String = requireNotNull(config.getString("main")) { "main is not defined" }
+
+    val version: String = requireNotNull(config.getString("version")) { "version is not defined" }
+
+    val authors: List<String> = ImmutableList.copyOf(config.getStringList("authors"))
 }

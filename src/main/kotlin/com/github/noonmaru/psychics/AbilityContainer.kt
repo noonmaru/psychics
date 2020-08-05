@@ -12,20 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *  
+ *
  */
 
-package com.github.noonmaru.psychics.util
+package com.github.noonmaru.psychics
 
-object Tick {
-    private val INIT_NANO_TIME = System.nanoTime()
+import java.io.File
 
-    val currentTicks: Long
-        get() {
-            return (System.nanoTime() - INIT_NANO_TIME) / (50L * 1000L * 1000L)
-        }
-}
-
-
-
-
+class AbilityContainer(
+    val file: File,
+    val description: AbilityDescription,
+    val conceptClass: Class<out AbilityConcept>,
+    val abilityClass: Class<out Ability<*>>
+)
