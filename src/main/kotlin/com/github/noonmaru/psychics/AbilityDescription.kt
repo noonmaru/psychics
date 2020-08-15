@@ -17,19 +17,14 @@
 
 package com.github.noonmaru.psychics
 
-import com.google.common.collect.ImmutableList
 import org.bukkit.configuration.ConfigurationSection
 
 class AbilityDescription(config: ConfigurationSection) {
-    val group: String = requireNotNull(config.getString("group")) { "group is not defined" }
-
     val name: String = requireNotNull(config.getString("name")) { "name is not defined" }
-
-    val id: String = "$group-$name"
 
     val main: String = requireNotNull(config.getString("main")) { "main is not defined" }
 
     val version: String = requireNotNull(config.getString("version")) { "version is not defined" }
 
-    val authors: List<String> = ImmutableList.copyOf(config.getStringList("authors"))
+    val author: String? = config.getString("author")
 }

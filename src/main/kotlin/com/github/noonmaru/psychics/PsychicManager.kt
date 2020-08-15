@@ -44,30 +44,50 @@ class PsychicManager(
     internal fun loadAbilities() {
         Psychics.logger.info("Loading abilities...")
 
-        abilitiesFolder.mkdirs()
+        val descriptions = loadAbilityDescriptions()
 
+        for ((file, description) in descriptions) {
+            abilityLoader.runCatching {
+                val container = load(file, description)
+                abilityContainers[container.name] = container
+            }.onFailure { exception: Throwable ->
+                exception.printStackTrace()
+                Psychics.logger.warning("Failed to load Ability ${description.main}")
+            }
+        }
+
+        Psychics.logger.info("Loaded abilities(${abilityContainers.count()}):")
+
+        for (key in abilityContainers.keys) {
+            Psychics.logger.info("  - $key")
+        }
+    }
+
+    private fun loadAbilityDescriptions(): List<Pair<File, AbilityDescription>> {
+        abilitiesFolder.mkdirs()
         val abilityFiles = abilitiesFolder.listFiles { file -> !file.isDirectory && file.name.endsWith(".jar") }
-            ?: return
-        val descriptions = TreeMap<String, Pair<File, AbilityDescription>>()
+            ?: return emptyList()
+
+        val byMain = TreeMap<String, Pair<File, AbilityDescription>>()
 
         for (abilityFile in abilityFiles) {
             abilityFile.runCatching { getAbilityDescription() }
                 .onSuccess { description ->
-                    val id = description.id
-                    val other = descriptions[id]
+                    val main = description.main
+                    val other = byMain[main]
 
                     if (other != null) {
                         val otherDescription = other.second
                         var legacy: File = abilityFile
 
                         if (description.version.compareVersion(otherDescription.version) > 0) { //높은 버전일경우
-                            descriptions[id] = Pair(abilityFile, description)
+                            byMain[main] = Pair(abilityFile, description)
                             legacy = other.first
                         }
 
                         Psychics.logger.warning("Ambiguous Ability file name. ${legacy.name}")
                     } else {
-                        descriptions[id] = Pair(abilityFile, description)
+                        byMain[main] = Pair(abilityFile, description)
                     }
                 }
                 .onFailure { exception ->
@@ -77,23 +97,7 @@ class PsychicManager(
                 }
         }
 
-        for ((id, description) in descriptions) {
-            abilityLoader.runCatching {
-                val container = load(description.first, description.second)
-                abilityContainers[id] = container
-            }.onFailure { exception: Throwable ->
-                exception.printStackTrace()
-
-                Psychics.logger.warning("Failed to load Ability ${description.second.id}")
-            }
-        }
-
-        Psychics.logger.info("Loaded abilities(${abilityContainers.count()}):")
-
-        for (key in abilityContainers.keys) {
-            Psychics.logger.info("  - $key")
-        }
-
+        return byMain.values.toList()
     }
 
     internal fun loadPsychics() {
@@ -121,12 +125,18 @@ class PsychicManager(
 
                 val abilityConcepts = arrayListOf<AbilityConcept>()
 
-                for ((id, value) in abilitiesConfig.getValues(false)) {
+                for ((abilityName, value) in abilitiesConfig.getValues(false)) {
                     if (value !is ConfigurationSection) continue
 
-                    val abilityContainer = requireNotNull(abilityContainers[id]) { "Not found ability $id" }
+                    val containerName = requireNotNull(value.getString(ABILITY)) { "$ABILITY is undefined" }
+                    val containers = findAbilityContainer(containerName)
+
+                    if (containers.isEmpty()) error("Not found ability $containerName")
+                    if (containers.count() > 1) error("Ambiguous Ability ${containers.joinToString { it.name }}")
+
+                    val abilityContainer = containers.first()
                     val abilityConcept = abilityContainer.conceptClass.newInstance()
-                    changed = changed or abilityConcept.initialize(abilityContainer, psychicConcept, value)
+                    changed = changed or abilityConcept.initialize(abilityName, abilityContainer, psychicConcept, value)
                     abilityConcepts += abilityConcept
                 }
 
@@ -151,8 +161,26 @@ class PsychicManager(
         }
     }
 
+    private fun findAbilityContainer(name: String): List<AbilityContainer> {
+        if (name.startsWith(".")) {
+            val list = arrayListOf<AbilityContainer>()
+
+            for ((key, container) in abilityContainers) {
+                if (key.endsWith(name))
+                    list += container
+            }
+
+            return list
+        }
+
+        val container = abilityContainers[name]
+
+        return if (container != null) listOf(container) else emptyList()
+    }
+
     companion object {
         private const val ABILITIES = "abilities"
+        private const val ABILITY = "ability"
     }
 }
 

@@ -21,6 +21,7 @@ import java.io.File
 
 class AbilityContainer(
     val file: File,
+    val name: String,
     val description: AbilityDescription,
     val conceptClass: Class<out AbilityConcept>,
     val abilityClass: Class<out Ability<*>>

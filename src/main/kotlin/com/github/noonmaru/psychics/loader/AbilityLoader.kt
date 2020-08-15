@@ -49,7 +49,7 @@ class AbilityLoader internal constructor() {
 
             classLoaders[file] = classLoader // 글로벌 클래스 로더 등록
 
-            return AbilityContainer(file, description, conceptClass, abilityClass)
+            return AbilityContainer(file, file.name.removeSuffix(".jar"), description, conceptClass, abilityClass)
         } catch (e: Exception) {
             classLoader.close()
             throw e

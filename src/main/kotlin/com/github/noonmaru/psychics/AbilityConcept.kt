@@ -28,8 +28,11 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 
-@Name("ability")
+@Name("common")
 open class AbilityConcept {
+    lateinit var name: String
+        private set
+
     lateinit var container: AbilityContainer
         private set
 
@@ -141,10 +144,12 @@ open class AbilityConcept {
         protected set
 
     internal fun initialize(
+        name: String,
         container: AbilityContainer,
         psychicConcept: PsychicConcept,
         config: ConfigurationSection
     ): Boolean {
+        this.name = name
         this.container = container
         this.psychicConcept = psychicConcept
         this.displayName = container.description.name
@@ -152,7 +157,7 @@ open class AbilityConcept {
             type = AbilityType.ACTIVE
         }
 
-        val ret = computeConfig(config)
+        val ret = computeConfig(config, true)
 
         this.description = ImmutableList.copyOf(description.renderTemplatesAll(config))
 
