@@ -17,8 +17,13 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.util.TargetFilter
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.ref.UpstreamReference
+import net.md_5.bungee.api.ChatColor
+import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.entity.Entity
+import java.util.function.Predicate
 import kotlin.math.max
 
 abstract class Ability<T : AbilityConcept> {
@@ -26,12 +31,21 @@ abstract class Ability<T : AbilityConcept> {
     lateinit var concept: T
         private set
 
-    var cooldownTicks: Long = 0
+    var cooldownTicks: Long = 0L
         get() {
-            return max(0, field - Tick.currentTicks)
+            return max(0L, field - Tick.currentTicks)
         }
         set(value) {
-            field = Tick.currentTicks + max(0L, value)
+            checkState()
+
+            val ticks = max(0L, value)
+            field = Tick.currentTicks + ticks
+
+            val wand = concept._wand
+
+            if (wand != null) {
+                esper.player.setCooldown(wand.type, ticks.toInt())
+            }
         }
 
     private lateinit var psychicRef: UpstreamReference<Psychic>
@@ -51,10 +65,34 @@ abstract class Ability<T : AbilityConcept> {
         this.psychicRef = UpstreamReference(psychic)
     }
 
-    open fun test(): Boolean {
+    open fun test(): TestResult {
         val psychic = psychic
 
-        return psychic.enabled && cooldownTicks == 0L && psychic.mana >= concept.cost
+        if (!psychic.enabled) return TestResult.FAILED_DISABLED
+        if (cooldownTicks > 0L) return TestResult.FAILED_COOLDOWN
+        if (psychic.mana < concept.cost) return TestResult.FAILED_COST
+
+        return TestResult.SUCCESS
+    }
+
+    internal fun save(config: ConfigurationSection) {
+        config[COOLDOWN_TICKS] = cooldownTicks
+
+        runCatching {
+            onSave(config)
+        }
+    }
+
+    internal fun load(config: ConfigurationSection) {
+        cooldownTicks = max(0L, config.getLong(COOLDOWN_TICKS))
+
+        runCatching {
+            onLoad(config)
+        }
+    }
+
+    companion object {
+        private const val COOLDOWN_TICKS = "cooldown-ticks"
     }
 
     /**
@@ -75,12 +113,12 @@ abstract class Ability<T : AbilityConcept> {
     /**
      * 정보를 디스크에 저장 할 때 호출됩니다.
      */
-    open fun onSave() {}
+    open fun onSave(config: ConfigurationSection) {}
 
     /**
      * 정보를 디스크로부터 불러 올 때 호출됩니다.
      */
-    open fun onLoad() {}
+    open fun onLoad(config: ConfigurationSection) {}
 
     /**
      * 능력이 활성화 될 때 호출됩니다.
@@ -104,27 +142,38 @@ abstract class Ability<T : AbilityConcept> {
 abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     var targeter: (() -> Any?)? = null
 
-    override fun test(): Boolean {
-        return psychic.channeling == null && super.test()
+    override fun test(): TestResult {
+        if (psychic.channeling != null) return TestResult.FAILED_CHANNEL
+
+        return super.test()
     }
 
-    open fun tryCast(castingTicks: Int = concept.castingTicks, targeter: (() -> Any?)? = null): Boolean {
-        if (test()) {
-            if (targeter != null) {
-                val target = targeter.invoke() ?: return false
+    open fun tryCast(
+        castingTicks: Long = concept.castingTicks,
+        cost: Double = concept.cost,
+        targeter: (() -> Any?)? = this.targeter
+    ): TestResult {
+        val result = test()
 
-                cast(castingTicks, target)
-            } else {
-                cast(castingTicks)
+        if (result === TestResult.SUCCESS) {
+            var target: Any? = null
+
+            if (targeter != null) {
+                target = targeter.invoke() ?: return TestResult.FAILED_TARGET
             }
 
-            return true
+            return if (psychic.consumeMana(cost)) {
+                cast(castingTicks, target)
+                TestResult.SUCCESS
+            } else {
+                TestResult.FAILED_COST
+            }
         }
 
-        return false
+        return result
     }
 
-    protected fun cast(castingTicks: Int, target: Any? = null) {
+    protected fun cast(castingTicks: Long, target: Any? = null) {
         checkState()
 
         if (castingTicks > 0) {
@@ -136,5 +185,43 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
 
     abstract fun onCast(target: Any?)
 
+    open fun onChannel(target: Any?) {}
+
     open fun onInterrupt(target: Any?) {}
+}
+
+fun Ability<*>.targetFilter(then: ((Entity) -> Boolean)? = null): Predicate<Entity> {
+    var filter: Predicate<Entity> = TargetFilter(esper.player)
+
+    if (then != null) filter = filter.and(then)
+
+    return filter
+}
+
+class TestResult private constructor(
+    val message: String,
+    val messageFormatter: ((message: String, ability: Ability<*>) -> String)?
+) {
+    companion object {
+        val SUCCESS = create("성공")
+        val FAILED_DISABLED = create("${ChatColor.BOLD}능력을 사용 할 수 없습니다.")
+        val FAILED_COOLDOWN = create("${ChatColor.BOLD}아직 준비되지 않았습니다.") { message, ability ->
+            "$message ${ChatColor.RESET}(${(ability.cooldownTicks + 19) / 20}${ChatColor.BOLD}초)"
+        }
+        val FAILED_COST = create("${ChatColor.BOLD}마나가 부족합니다.") { message, ability ->
+            "$message ${ChatColor.RESET}(${ability.concept.cost.toInt()})"
+        }
+        val FAILED_TARGET = create("${ChatColor.BOLD}대상 혹은 위치가 지정되지 않았습니다.")
+        val FAILED_CHANNEL = create("${ChatColor.BOLD}시전중인 스킬이 있습니다.")
+
+        fun create(message: String, formatter: ((message: String, ability: Ability<*>) -> String)? = null): TestResult {
+            return TestResult(message, formatter)
+        }
+    }
+
+    fun getMessage(ability: Ability<*>): String {
+        val formatter = messageFormatter ?: return message
+
+        return formatter.invoke(message, ability)
+    }
 }

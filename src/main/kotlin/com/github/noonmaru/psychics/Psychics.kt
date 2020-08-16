@@ -17,6 +17,8 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.tap.fake.FakeEntityServer
+import org.bukkit.entity.Player
 import java.util.logging.Logger
 
 object Psychics {
@@ -27,8 +29,15 @@ object Psychics {
     lateinit var psychicManager: PsychicManager
         private set
 
-    fun initialize(logger: Logger, psychicManager: PsychicManager) {
+    lateinit var fakeEntityServer: FakeEntityServer
+        private set
+
+    fun initialize(logger: Logger, psychicManager: PsychicManager, fakeEntityServer: FakeEntityServer) {
         this.logger = logger
         this.psychicManager = psychicManager
+        this.fakeEntityServer = fakeEntityServer
     }
 }
+
+val Player.esper: Esper
+    get() = requireNotNull(Psychics.psychicManager.getEsper(this)) { "Not found esper for $this" }

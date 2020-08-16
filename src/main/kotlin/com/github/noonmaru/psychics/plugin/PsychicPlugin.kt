@@ -17,8 +17,11 @@
 
 package com.github.noonmaru.psychics.plugin
 
+import com.github.noonmaru.kommand.kommand
 import com.github.noonmaru.psychics.PsychicManager
 import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.command.CommandPsychic
+import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -27,16 +30,42 @@ import java.io.File
  */
 class PsychicPlugin : JavaPlugin() {
 
+    private var psychicManager: PsychicManager? = null
+
     override fun onEnable() {
         val psychicManager = PsychicManager(
             File(dataFolder, "abilities"),
             File(dataFolder, "psychics"),
             File(dataFolder, "espers")
         )
+        val fakeEntityServer = FakeEntityServer.create(this)
 
-        Psychics.initialize(logger, psychicManager)
+        Psychics.initialize(logger, psychicManager, fakeEntityServer)
+
+        server.apply {
+            pluginManager.registerEvents(EventListener(), this@PsychicPlugin)
+            scheduler.runTaskTimer(this@PsychicPlugin, SchedulerTask(), 0L, 1L)
+        }
 
         psychicManager.loadAbilities()
         psychicManager.loadPsychics()
+        psychicManager.loadEspers()
+
+        this.psychicManager = psychicManager
+
+        kommand {
+            register("psychics") {
+                CommandPsychic.register(this)
+            }
+        }
+    }
+
+    override fun onDisable() {
+        psychicManager?.run {
+            for (esper in espers) {
+                esper.save()
+                esper.clear()
+            }
+        }
     }
 }

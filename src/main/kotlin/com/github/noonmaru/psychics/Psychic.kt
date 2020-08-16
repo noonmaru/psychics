@@ -24,20 +24,33 @@ import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.github.noonmaru.tap.fake.FakeProjectileManager
 import com.github.noonmaru.tap.ref.UpstreamReference
 import com.google.common.collect.ImmutableList
+import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.attribute.Attribute
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
+import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.inventory.ItemStack
 import kotlin.math.max
 
 class Psychic(
     val concept: PsychicConcept
 ) {
     var mana = 0.0
+        set(value) {
+            checkState()
 
-    private var ticks = 0L
+            if (value != field) {
+                val max = concept.mana
+                field = value.coerceIn(0.0, max)
+                updateManaBar()
+            }
+        }
+
+    var ticks = 0L
+        private set
 
     val abilities: List<Ability<*>>
 
@@ -65,6 +78,8 @@ class Psychic(
 
     private lateinit var listeners: ArrayList<RegisteredEntityListener>
 
+    private var prevUpdateTicks = 0L
+
     init {
         abilities = ImmutableList.copyOf(concept.abilityConcepts.map { concept ->
             concept.createAbilityInstance().apply {
@@ -77,24 +92,40 @@ class Psychic(
     internal fun attach(esper: Esper) {
         require(!this::esperRef.isInitialized) { "Cannot redefine epser" }
 
+        val player = esper.player
+
         esperRef = UpstreamReference(esper)
-        castingBar = Bukkit.createBossBar(null, BarColor.WHITE, BarStyle.SOLID)
+        castingBar = Bukkit.createBossBar(null, BarColor.WHITE, BarStyle.SOLID).apply {
+            addPlayer(player)
+            isVisible = false
+        }
         scheduler = PsychicScheduler()
         projectileManager = FakeProjectileManager()
         listeners = arrayListOf()
 
         if (concept.mana > 0.0) {
-            manaBar = Bukkit.createBossBar(null, concept.manaColor, BarStyle.SEGMENTED_10)
+            manaBar = Bukkit.createBossBar(null, concept.manaColor, BarStyle.SEGMENTED_10).apply {
+                addPlayer(player)
+                isVisible = true
+            }
         }
+
+        updateManaBar()
 
         for (ability in abilities) {
             ability.runCatching { onAttach() }
         }
     }
 
-    internal fun detach() {
+    private fun detach() {
+        manaBar?.removeAll()
+        castingBar.removeAll()
+
         for (ability in abilities) {
-            ability.runCatching { onDetach() }
+            ability.runCatching {
+                cooldownTicks = 0
+                onDetach()
+            }
         }
         esperRef.clear()
     }
@@ -105,7 +136,7 @@ class Psychic(
         if (enabled) return
 
         enabled = true
-        ticks = Tick.currentTicks
+        prevUpdateTicks = Tick.currentTicks
 
         for (ability in abilities) {
             ability.runCatching { onEnable() }
@@ -134,6 +165,68 @@ class Psychic(
         }
     }
 
+    private fun updateManaBar() {
+        manaBar?.let { bar ->
+            val current = mana
+            val max = concept.mana
+
+            bar.progress = current / max
+            bar.setTitle("${current.toInt()} / ${max.toInt()}")
+        }
+    }
+
+    companion object {
+        internal const val NAME = "name"
+        private const val MANA = "mana"
+        private const val TICKS = "ticks"
+        private const val ENABLED = "enabled"
+        private const val ABILITIES = "abilities"
+    }
+
+    internal fun save(config: ConfigurationSection) {
+        config[NAME] = concept.name
+        config[MANA] = mana
+        config[TICKS] = ticks
+        config[ENABLED] = enabled
+
+        val abilitiesSection = config.createSection(ABILITIES)
+
+        for (ability in abilities) {
+            val abilityName = ability.concept.name
+            val abilitySection = abilitiesSection.createSection(abilityName)
+
+            ability.save(abilitySection)
+        }
+    }
+
+    internal fun load(config: ConfigurationSection) {
+        mana = config.getDouble(MANA).coerceIn(0.0, concept.mana)
+        ticks = max(0, config.getLong(TICKS))
+
+        config.getConfigurationSection(ABILITIES)?.let { abilitiesSection ->
+            for (ability in abilities) {
+                val abilityName = ability.concept.name
+                val abilitySection = abilitiesSection.getConfigurationSection(abilityName)
+
+                if (abilitySection != null)
+                    ability.load(abilitySection)
+            }
+        }
+
+        if (config.getBoolean(ENABLED)) enable()
+    }
+
+    fun getAbilityByWand(item: ItemStack): Ability<*>? {
+        for (ability in abilities) {
+            val wand = ability.concept._wand
+
+            if (wand != null && wand.isSimilar(item))
+                return ability
+        }
+
+        return null
+    }
+
     fun runTask(runnable: Runnable, delay: Long): PsychicTask {
         checkState()
         checkEnabled()
@@ -155,12 +248,24 @@ class Psychic(
         projectileManager.launch(location, projectile)
     }
 
-    internal fun startChannel(ability: ActiveAbility<*>, castingTicks: Int, target: Any?) {
+    fun consumeMana(amount: Double): Boolean {
+        if (mana > amount) {
+            mana -= amount
+
+            return true
+        }
+
+        return false
+    }
+
+    internal fun startChannel(ability: ActiveAbility<*>, castingTicks: Long, target: Any?) {
         interruptChannel()
 
         channeling = Channel(ability, castingTicks, target)
         castingBar.apply {
-            setTitle(ability.concept.displayName)
+            val abilityConcept = ability.concept
+            setTitle("${ChatColor.BOLD}${concept.displayName}")
+            color = abilityConcept.castingBarColor ?: BarColor.YELLOW
             progress = 0.0
             isVisible = true
         }
@@ -180,7 +285,10 @@ class Psychic(
     }
 
     internal fun update() {
-        val elapsedTicks = Tick.currentTicks - ticks
+        val currentTicks = Tick.currentTicks
+        val elapsedTicks = currentTicks - prevUpdateTicks
+        prevUpdateTicks = currentTicks
+        ticks += elapsedTicks
 
         regenMana(elapsedTicks)
         regenHealth(elapsedTicks)
@@ -193,7 +301,9 @@ class Psychic(
 
             castingBar.progress = 1.0 - remainTicks.toDouble() / channel.ability.concept.castingTicks.toDouble()
 
-            if (remainTicks <= 0) {
+            if (remainTicks > 0) {
+                channel.channel()
+            } else {
                 castingBar.setTitle(null)
                 castingBar.isVisible = false
                 channeling = null
@@ -215,7 +325,7 @@ class Psychic(
             player.health =
                 (player.health + concept.healthRegenPerTick * elapsedTicks).coerceIn(
                     0.0,
-                    maxHealth + concept.healthBonus
+                    maxHealth
                 )
         }
     }
@@ -229,11 +339,15 @@ class Psychic(
     }
 }
 
-class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Int, val target: Any? = null) {
+class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Long, val target: Any? = null) {
     internal val channelTick = Tick.currentTicks + castingTicks
 
     val remainTicks
         get() = max(0, channelTick - Tick.currentTicks)
+
+    internal fun channel() {
+        ability.runCatching { onChannel(target) }
+    }
 
     internal fun cast() {
         ability.runCatching { onCast(target) }

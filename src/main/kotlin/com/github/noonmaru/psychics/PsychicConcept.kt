@@ -151,6 +151,7 @@ class PsychicConcept internal constructor() {
 
 fun PsychicConcept.createTooltipBook(stats: (EsperStatistic) -> Double): ItemStack {
     val components = ArrayList<BaseComponent>()
+    val psychicDisplayName = displayName
 
     components += TextComponent().apply {
         isBold = true
@@ -175,8 +176,8 @@ fun PsychicConcept.createTooltipBook(stats: (EsperStatistic) -> Double): ItemSta
 
     val book = ItemStack(Material.WRITTEN_BOOK)
     book.itemMeta = (book.itemMeta as BookMeta).apply {
-        title = displayName
-        author = "noonmaru"
+        title = psychicDisplayName
+        author = "Noonmaru"
         generation = BookMeta.Generation.ORIGINAL
         spigot().addPage(components.toTypedArray())
     }

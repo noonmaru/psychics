@@ -25,6 +25,7 @@ import com.github.noonmaru.tap.config.*
 import com.github.noonmaru.tap.template.renderTemplatesAll
 import com.google.common.collect.ImmutableList
 import net.md_5.bungee.api.ChatColor
+import org.bukkit.boss.BarColor
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 
@@ -64,7 +65,7 @@ open class AbilityConcept {
      */
     @Config(required = false)
     @RangeInt(min = 0)
-    var cooldownTicks = 0
+    var cooldownTicks = 0L
         protected set
 
     /**
@@ -80,7 +81,7 @@ open class AbilityConcept {
      */
     @Config(required = false)
     @RangeInt(min = 0)
-    var castingTicks = 0
+    var castingTicks = 0L
         protected set
 
     /**
@@ -92,10 +93,16 @@ open class AbilityConcept {
         protected set
 
     /**
+     * 시전 상태 바 색상
+     */
+    @Config(required = false)
+    var castingBarColor: BarColor? = null
+
+    /**
      * 지속 시간
      */
     @Config(required = false)
-    var durationTicks = 0
+    var durationTicks = 0L
         protected set
 
     /**

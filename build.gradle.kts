@@ -17,6 +17,7 @@
 
 plugins {
     kotlin("jvm") version "1.3.72"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
     `maven-publish`
 }
 
@@ -32,13 +33,13 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8")) //kotlin
-    implementation(kotlin("reflect"))
-    implementation("junit:junit:4.12")
-    implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
-    implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    implementation("com.github.noonmaru:tap:2.8.6")
-
+    compileOnly(kotlin("stdlib-jdk8")) //kotlin
+    compileOnly(kotlin("reflect"))
+    testCompileOnly("junit:junit:4.12")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
+    compileOnly("com.github.noonmaru:tap:2.8.6")
+    implementation("com.github.noonmaru:kommand:0.1.9")
 }
 
 tasks {
@@ -59,13 +60,17 @@ tasks {
             expand(project.properties)
         }
     }
-    create<Copy>("distJar") {
-        from(jar)
-        into("W:\\Servers\\psychics-1.16.1\\plugins")
-    }
     create<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+    shadowJar {
+        relocate("com.github.noonmaru.kommand", "com.github.noonmaru.psychics.shaded")
+        archiveClassifier.set("dist")
+    }
+    create<Copy>("distJar") {
+        from(shadowJar)
+        into("W:\\Servers\\psychics-1.16.1\\plugins")
     }
 }
 

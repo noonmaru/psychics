@@ -18,6 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.loader.AbilityLoader
+import com.google.common.collect.ImmutableSortedMap
 import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -35,32 +36,62 @@ class PsychicManager(
 ) {
     private val abilityLoader = AbilityLoader()
 
-    private val abilityContainers = TreeMap<String, AbilityContainer>()
+    lateinit var abilityContainersById: Map<String, AbilityContainer>
+        private set
 
-    private val psychicConcetps = TreeMap<String, PsychicConcept>(String.CASE_INSENSITIVE_ORDER)
+    lateinit var psychicConceptsByName: Map<String, PsychicConcept>
+        private set
 
-    private val espers = IdentityHashMap<Player, Esper>(Bukkit.getMaxPlayers())
+    private val espersByPlayer = IdentityHashMap<Player, Esper>(Bukkit.getMaxPlayers())
+
+    val espers = Collections.unmodifiableCollection(espersByPlayer.values)
+
+    fun getEsper(player: Player): Esper? {
+        return espersByPlayer[player]
+    }
+
+    fun getPsychicConcept(name: String): PsychicConcept? {
+        return psychicConceptsByName[name]
+    }
+
+    internal fun addPlayer(player: Player) {
+        espersByPlayer.computeIfAbsent(player) {
+            val esper = Esper(this, it)
+            esper.load()
+            esper
+        }.load()
+    }
+
+    internal fun removePlayer(player: Player) {
+        espersByPlayer.remove(player)?.let { esper ->
+            esper.save()
+            esper.clear()
+        }
+    }
 
     internal fun loadAbilities() {
         Psychics.logger.info("Loading abilities...")
 
         val descriptions = loadAbilityDescriptions()
+        val map = TreeMap<String, AbilityContainer>()
 
         for ((file, description) in descriptions) {
             abilityLoader.runCatching {
                 val container = load(file, description)
-                abilityContainers[container.name] = container
+                map[description.artifactId] = container
             }.onFailure { exception: Throwable ->
                 exception.printStackTrace()
-                Psychics.logger.warning("Failed to load Ability ${description.main}")
+                Psychics.logger.warning("Failed to load Ability ${file.name}")
             }
         }
 
-        Psychics.logger.info("Loaded abilities(${abilityContainers.count()}):")
+        Psychics.logger.info("Loaded abilities(${map.count()}):")
 
-        for (key in abilityContainers.keys) {
+        for (key in map.keys) {
             Psychics.logger.info("  - $key")
         }
+
+        abilityContainersById = ImmutableSortedMap.copyOf(map)
     }
 
     private fun loadAbilityDescriptions(): List<Pair<File, AbilityDescription>> {
@@ -68,26 +99,26 @@ class PsychicManager(
         val abilityFiles = abilitiesFolder.listFiles { file -> !file.isDirectory && file.name.endsWith(".jar") }
             ?: return emptyList()
 
-        val byMain = TreeMap<String, Pair<File, AbilityDescription>>()
+        val byId = TreeMap<String, Pair<File, AbilityDescription>>()
 
         for (abilityFile in abilityFiles) {
             abilityFile.runCatching { getAbilityDescription() }
                 .onSuccess { description ->
-                    val main = description.main
-                    val other = byMain[main]
+                    val id = description.artifactId
+                    val other = byId[id]
 
                     if (other != null) {
                         val otherDescription = other.second
                         var legacy: File = abilityFile
 
                         if (description.version.compareVersion(otherDescription.version) > 0) { //높은 버전일경우
-                            byMain[main] = Pair(abilityFile, description)
+                            byId[id] = Pair(abilityFile, description)
                             legacy = other.first
                         }
 
                         Psychics.logger.warning("Ambiguous Ability file name. ${legacy.name}")
                     } else {
-                        byMain[main] = Pair(abilityFile, description)
+                        byId[id] = Pair(abilityFile, description)
                     }
                 }
                 .onFailure { exception ->
@@ -97,7 +128,7 @@ class PsychicManager(
                 }
         }
 
-        return byMain.values.toList()
+        return byId.values.toList()
     }
 
     internal fun loadPsychics() {
@@ -105,6 +136,8 @@ class PsychicManager(
 
         val psychicFiles =
             psychicsFolder.listFiles { file -> !file.isDirectory && file.name.endsWith(".yml") } ?: return
+
+        val map = TreeMap<String, PsychicConcept>(String.CASE_INSENSITIVE_ORDER)
 
         for (psychicFile in psychicFiles) {
             val name = psychicFile.name.removeSuffix(".yml")
@@ -132,7 +165,7 @@ class PsychicManager(
                     val containers = findAbilityContainer(containerName)
 
                     if (containers.isEmpty()) error("Not found ability $containerName")
-                    if (containers.count() > 1) error("Ambiguous Ability ${containers.joinToString { it.name }}")
+                    if (containers.count() > 1) error("Ambiguous Ability ${containers.joinToString { it.description.artifactId }}")
 
                     val abilityContainer = containers.first()
                     val abilityConcept = abilityContainer.conceptClass.newInstance()
@@ -142,7 +175,7 @@ class PsychicManager(
 
                 psychicConcept.initializeAbilityConcepts(abilityConcepts)
 
-                psychicConcetps[name] = psychicConcept
+                map[name] = psychicConcept
 
                 if (changed) {
                     config.runCatching { save(psychicFile) }
@@ -154,18 +187,20 @@ class PsychicManager(
             }
         }
 
-        Psychics.logger.info("Loaded psychics(${abilityContainers.count()}):")
+        Psychics.logger.info("Loaded psychics(${map.count()}):")
 
-        for (key in psychicConcetps.keys) {
+        for (key in map.keys) {
             Psychics.logger.info("  - $key")
         }
+
+        psychicConceptsByName = ImmutableSortedMap.copyOf(map)
     }
 
     private fun findAbilityContainer(name: String): List<AbilityContainer> {
         if (name.startsWith(".")) {
             val list = arrayListOf<AbilityContainer>()
 
-            for ((key, container) in abilityContainers) {
+            for ((key, container) in abilityContainersById) {
                 if (key.endsWith(name))
                     list += container
             }
@@ -173,9 +208,15 @@ class PsychicManager(
             return list
         }
 
-        val container = abilityContainers[name]
+        val container = abilityContainersById[name]
 
         return if (container != null) listOf(container) else emptyList()
+    }
+
+    internal fun loadEspers() {
+        for (player in Bukkit.getOnlinePlayers()) {
+            addPlayer(player)
+        }
     }
 
     companion object {

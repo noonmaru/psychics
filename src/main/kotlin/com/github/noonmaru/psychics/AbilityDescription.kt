@@ -20,7 +20,11 @@ package com.github.noonmaru.psychics
 import org.bukkit.configuration.ConfigurationSection
 
 class AbilityDescription(config: ConfigurationSection) {
+    val group: String = requireNotNull(config.getString("group")) { "gruop is not defined" }
+
     val name: String = requireNotNull(config.getString("name")) { "name is not defined" }
+
+    val artifactId = "$group.$name"
 
     val main: String = requireNotNull(config.getString("main")) { "main is not defined" }
 

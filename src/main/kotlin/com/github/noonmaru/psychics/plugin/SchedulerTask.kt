@@ -15,13 +15,20 @@
  *
  */
 
-package com.github.noonmaru.psychics
+package com.github.noonmaru.psychics.plugin
 
-import java.io.File
+import com.github.noonmaru.psychics.Psychics
 
-class AbilityContainer(
-    val file: File,
-    val description: AbilityDescription,
-    val conceptClass: Class<out AbilityConcept>,
-    val abilityClass: Class<out Ability<*>>
-)
+class SchedulerTask : Runnable {
+
+    override fun run() {
+        for (esper in Psychics.psychicManager.espers) {
+            esper.psychic?.run {
+                if (enabled)
+                    update()
+            }
+        }
+
+        Psychics.fakeEntityServer.update()
+    }
+}
