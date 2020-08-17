@@ -22,7 +22,6 @@ import org.bukkit.entity.Player
 import java.util.logging.Logger
 
 object Psychics {
-
     lateinit var logger: Logger
         private set
 

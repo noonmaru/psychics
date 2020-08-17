@@ -160,7 +160,8 @@ open class AbilityConcept {
         this.container = container
         this.psychicConcept = psychicConcept
         this.displayName = container.description.name
-        if (container.abilityClass.isAssignableFrom(ActiveAbility::class.java)) {
+
+        if (ActiveAbility::class.java.isAssignableFrom(container.abilityClass)) {
             type = AbilityType.ACTIVE
         }
 

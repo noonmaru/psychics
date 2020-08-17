@@ -26,7 +26,6 @@ import com.github.noonmaru.psychics.PsychicConcept
 import com.github.noonmaru.psychics.Psychics
 import com.github.noonmaru.psychics.createTooltipBook
 import com.github.noonmaru.psychics.esper
-import com.github.noonmaru.tap.command.tabComplete
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -59,7 +58,7 @@ internal object CommandPsychic {
     }
 
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
-        player.esper.attachPsychic(psychicConcept).enable()
+        player.esper.attachPsychic(psychicConcept).enabled = true
         sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
     }
 }
@@ -70,6 +69,7 @@ object PsychicArgument : KommandArgument<PsychicConcept> {
     }
 
     override fun listSuggestion(context: KommandContext, target: String): Collection<String> {
-        return Psychics.psychicManager.psychicConceptsByName.keys.tabComplete(target)
+        return Psychics.psychicManager.psychicConceptsByName.keys.asSequence().filter { it.startsWith(target, true) }
+            .toList()
     }
 }

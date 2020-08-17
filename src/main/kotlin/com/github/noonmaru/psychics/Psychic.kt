@@ -21,6 +21,7 @@ import com.github.noonmaru.psychics.task.PsychicScheduler
 import com.github.noonmaru.psychics.task.PsychicTask
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.event.RegisteredEntityListener
+import com.github.noonmaru.tap.fake.FakeEntity
 import com.github.noonmaru.tap.fake.FakeProjectileManager
 import com.github.noonmaru.tap.ref.UpstreamReference
 import com.google.common.collect.ImmutableList
@@ -28,11 +29,14 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.attribute.Attribute
+import org.bukkit.block.data.BlockData
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.entity.Entity
 import org.bukkit.inventory.ItemStack
+import java.util.*
 import kotlin.math.max
 
 class Psychic(
@@ -58,7 +62,19 @@ class Psychic(
         private set
 
     var enabled = false
-        private set
+        set(value) {
+            checkState()
+
+            if (field != value) {
+                field = value
+
+                if (value) {
+                    onEnable()
+                } else {
+                    onDisable()
+                }
+            }
+        }
 
     var valid = true
         private set
@@ -77,6 +93,8 @@ class Psychic(
     private lateinit var projectileManager: FakeProjectileManager
 
     private lateinit var listeners: ArrayList<RegisteredEntityListener>
+
+    private lateinit var fakeEntities: MutableSet<FakeEntity>
 
     private var prevUpdateTicks = 0L
 
@@ -102,6 +120,7 @@ class Psychic(
         scheduler = PsychicScheduler()
         projectileManager = FakeProjectileManager()
         listeners = arrayListOf()
+        fakeEntities = Collections.newSetFromMap(WeakHashMap<FakeEntity, Boolean>())
 
         if (concept.mana > 0.0) {
             manaBar = Bukkit.createBossBar(null, concept.manaColor, BarStyle.SEGMENTED_10).apply {
@@ -130,11 +149,7 @@ class Psychic(
         esperRef.clear()
     }
 
-    fun enable() {
-        checkState()
-
-        if (enabled) return
-
+    private fun onEnable() {
         enabled = true
         prevUpdateTicks = Tick.currentTicks
 
@@ -143,19 +158,19 @@ class Psychic(
         }
     }
 
-    fun disable() {
-        checkState()
-
-        if (!enabled) return
-
-        enabled = false
-
+    private fun onDisable() {
         castingBar.isVisible = false
         scheduler.cancelAll()
         projectileManager.clear()
         listeners.run {
             for (registeredEntityListener in this) {
                 registeredEntityListener.unregister()
+            }
+            clear()
+        }
+        fakeEntities.run {
+            for (fakeEntity in this) {
+                fakeEntity.remove()
             }
             clear()
         }
@@ -213,7 +228,7 @@ class Psychic(
             }
         }
 
-        if (config.getBoolean(ENABLED)) enable()
+        enabled = config.getBoolean(ENABLED)
     }
 
     fun getAbilityByWand(item: ItemStack): Ability<*>? {
@@ -244,8 +259,28 @@ class Psychic(
     fun launchProjectile(location: Location, projectile: PsychicProjectile) {
         checkState()
         checkEnabled()
-
+        projectile.psychic = this
         projectileManager.launch(location, projectile)
+    }
+
+    fun spawnFakeEntity(location: Location, entityClass: Class<out Entity>): FakeEntity {
+        checkState()
+        checkEnabled()
+
+        val fakeEntity = Psychics.fakeEntityServer.spawnEntity(location, entityClass)
+        fakeEntities.add(fakeEntity)
+
+        return fakeEntity
+    }
+
+    fun spawnFallingBlock(location: Location, blockData: BlockData): FakeEntity {
+        checkState()
+        checkEnabled()
+
+        val fakeEntity = Psychics.fakeEntityServer.spawnFallingBlock(location, blockData)
+        fakeEntities.add(fakeEntity)
+
+        return fakeEntity
     }
 
     fun consumeMana(amount: Double): Boolean {
@@ -279,7 +314,7 @@ class Psychic(
     }
 
     internal fun destroy() {
-        disable()
+        enabled = false
         detach()
         valid = false
     }

@@ -51,6 +51,10 @@ class PsychicPlugin : JavaPlugin() {
         psychicManager.loadPsychics()
         psychicManager.loadEspers()
 
+        for (player in server.onlinePlayers) {
+            Psychics.fakeEntityServer.addPlayer(player)
+        }
+
         this.psychicManager = psychicManager
 
         kommand {

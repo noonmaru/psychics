@@ -32,12 +32,16 @@ import org.bukkit.inventory.ItemStack
 class EventListener : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
-        Psychics.psychicManager.addPlayer(event.player)
+        val player = event.player
+        Psychics.psychicManager.addPlayer(player)
+        Psychics.fakeEntityServer.addPlayer(player)
     }
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        Psychics.psychicManager.removePlayer(event.player)
+        val player = event.player
+        Psychics.psychicManager.removePlayer(player)
+        Psychics.fakeEntityServer.removePlayer(player)
     }
 
     @EventHandler
@@ -65,15 +69,13 @@ class EventListener : Listener {
 
 private fun Psychic.castByWand(item: ItemStack) {
     esper.psychic?.let { psychic ->
-        if (psychic.enabled) {
-            val ability = psychic.getAbilityByWand(item)
+        val ability = psychic.getAbilityByWand(item)
 
-            if (ability is ActiveAbility) {
-                val result = ability.tryCast()
+        if (ability is ActiveAbility) {
+            val result = ability.tryCast()
 
-                if (result !== TestResult.SUCCESS) {
-                    esper.player.sendActionBar(result.getMessage(ability))
-                }
+            if (result !== TestResult.SUCCESS) {
+                esper.player.sendActionBar(result.getMessage(ability))
             }
         }
     }

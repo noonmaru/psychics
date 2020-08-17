@@ -22,8 +22,6 @@ import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.ref.UpstreamReference
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.entity.Entity
-import java.util.function.Predicate
 import kotlin.math.max
 
 abstract class Ability<T : AbilityConcept> {
@@ -190,12 +188,8 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     open fun onInterrupt(target: Any?) {}
 }
 
-fun Ability<*>.targetFilter(then: ((Entity) -> Boolean)? = null): Predicate<Entity> {
-    var filter: Predicate<Entity> = TargetFilter(esper.player)
-
-    if (then != null) filter = filter.and(then)
-
-    return filter
+fun Ability<*>.targetFilter(): TargetFilter {
+    return TargetFilter(esper.player)
 }
 
 class TestResult private constructor(

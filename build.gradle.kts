@@ -38,7 +38,7 @@ dependencies {
     testCompileOnly("junit:junit:4.12")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    compileOnly("com.github.noonmaru:tap:2.8.6")
+    compileOnly("com.github.noonmaru:tap:2.8.7")
     implementation("com.github.noonmaru:kommand:0.1.9")
 }
 
