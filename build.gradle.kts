@@ -16,16 +16,15 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.0"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     `maven-publish`
 }
 
-group = properties["pluginGroup"]!!
-version = properties["pluginVersion"]!!
+group = requireNotNull(properties["pluginGroup"])
+version = requireNotNull(properties["pluginVersion"])
 
 repositories {
-    mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/") //paper
     maven(url = "https://oss.sonatype.org/content/groups/public/") //sonatype
     maven(url = "https://repo.dmulloy2.net/nexus/repository/public/") //protocollib
@@ -36,9 +35,9 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8")) //kotlin
     compileOnly(kotlin("reflect"))
     testCompileOnly("junit:junit:4.12")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    compileOnly("com.github.noonmaru:tap:2.8.7")
+    compileOnly("com.github.noonmaru:tap:2.8.9")
     implementation("com.github.noonmaru:kommand:0.1.9")
 }
 
