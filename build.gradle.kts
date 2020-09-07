@@ -21,24 +21,31 @@ plugins {
     `maven-publish`
 }
 
-group = requireNotNull(properties["pluginGroup"])
-version = requireNotNull(properties["pluginVersion"])
+group = requireNotNull(properties["pluginGroup"]) { "Group is undefined in properties" }
+version = requireNotNull(properties["pluginVersion"]) { "Version is undefined in properties" }
 
 repositories {
-    maven(url = "https://papermc.io/repo/repository/maven-public/") //paper
-    maven(url = "https://oss.sonatype.org/content/groups/public/") //sonatype
-    maven(url = "https://repo.dmulloy2.net/nexus/repository/public/") //protocollib
-    maven(url = "https://jitpack.io/") //tap, psychic
+    mavenLocal()
+    mavenCentral()
+    maven(url = "https://papermc.io/repo/repository/maven-public/")
+    maven(url = "https://jitpack.io/")
 }
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8")) //kotlin
     compileOnly(kotlin("reflect"))
-    testCompileOnly("junit:junit:4.12")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    compileOnly("com.github.noonmaru:tap:2.8.9")
-    implementation("com.github.noonmaru:kommand:0.1.9")
+    implementation("com.github.noonmaru:tap:3.0.0")
+    implementation("com.github.noonmaru:kommand:0.3")
+
+    testImplementation("junit:junit:4.13")
+    testImplementation("org.mockito:mockito-core:3.3.3")
+    testImplementation("org.powermock:powermock-module-junit4:2.0.7")
+    testImplementation("org.powermock:powermock-api-mockito2:2.0.7")
+    testImplementation("org.slf4j:slf4j-api:1.7.25")
+    testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
+    testImplementation("org.spigotmc:spigot:1.16.2-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -59,17 +66,15 @@ tasks {
             expand(project.properties)
         }
     }
+    shadowJar {
+        gradle.taskGraph.whenReady {
+            if (hasTask(":publishTapPublicationToMavenLocal"))
+                archiveClassifier.set("")
+        }
+    }
     create<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
-    }
-    shadowJar {
-        relocate("com.github.noonmaru.kommand", "com.github.noonmaru.psychics.shaded")
-        archiveClassifier.set("dist")
-    }
-    create<Copy>("distJar") {
-        from(shadowJar)
-        into("W:\\Servers\\psychics-1.16.1\\plugins")
     }
 }
 
@@ -77,8 +82,17 @@ publishing {
     publications {
         create<MavenPublication>("Psychics") {
             artifactId = project.name
-            from(components["java"])
+            project.shadow.component(this)
             artifact(tasks["sourcesJar"])
+        }
+    }
+}
+
+if (!hasProperty("debug")) {
+    tasks {
+        shadowJar {
+            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+            relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
     }
 }
