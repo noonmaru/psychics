@@ -17,8 +17,8 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.task.PsychicScheduler
-import com.github.noonmaru.psychics.task.PsychicTask
+import com.github.noonmaru.psychics.task.TickScheduler
+import com.github.noonmaru.psychics.task.TickTask
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.event.RegisteredEntityListener
 import com.github.noonmaru.tap.fake.FakeEntity
@@ -88,7 +88,7 @@ class Psychic(
 
     private lateinit var castingBar: BossBar
 
-    private lateinit var scheduler: PsychicScheduler
+    private lateinit var scheduler: TickScheduler
 
     private lateinit var projectileManager: FakeProjectileManager
 
@@ -117,7 +117,7 @@ class Psychic(
             addPlayer(player)
             isVisible = false
         }
-        scheduler = PsychicScheduler()
+        scheduler = TickScheduler()
         projectileManager = FakeProjectileManager()
         listeners = arrayListOf()
         fakeEntities = Collections.newSetFromMap(WeakHashMap<FakeEntity, Boolean>())
@@ -242,14 +242,14 @@ class Psychic(
         return null
     }
 
-    fun runTask(runnable: Runnable, delay: Long): PsychicTask {
+    fun runTask(runnable: Runnable, delay: Long): TickTask {
         checkState()
         checkEnabled()
 
         return scheduler.runTask(runnable, delay)
     }
 
-    fun runTaskTimer(runnable: Runnable, delay: Long, period: Long): PsychicTask {
+    fun runTaskTimer(runnable: Runnable, delay: Long, period: Long): TickTask {
         checkState()
         checkEnabled()
 
