@@ -259,6 +259,7 @@ class Psychic(
     fun launchProjectile(location: Location, projectile: PsychicProjectile) {
         checkState()
         checkEnabled()
+
         projectile.psychic = this
         projectileManager.launch(location, projectile)
     }
@@ -375,7 +376,7 @@ class Psychic(
 }
 
 class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Long, val target: Any? = null) {
-    internal val channelTick = Tick.currentTicks + castingTicks
+    private val channelTick = Tick.currentTicks + castingTicks
 
     val remainTicks
         get() = max(0, channelTick - Tick.currentTicks)
