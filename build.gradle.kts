@@ -68,7 +68,7 @@ tasks {
     }
     shadowJar {
         gradle.taskGraph.whenReady {
-            if (hasTask(":publishTapPublicationToMavenLocal"))
+            if (hasTask(":publishPsychicsPublicationToMavenLocal"))
                 archiveClassifier.set("")
         }
     }
