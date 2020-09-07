@@ -68,8 +68,10 @@ tasks {
     }
     shadowJar {
         gradle.taskGraph.whenReady {
-            if (hasTask(":publishPsychicsPublicationToMavenLocal"))
+            if (hasTask(":publishPsychicsPublicationToMavenLocal")) {
                 archiveClassifier.set("")
+                println("remove jar classifier")
+            }
         }
     }
     create<Jar>("sourcesJar") {
@@ -81,7 +83,6 @@ tasks {
 publishing {
     publications {
         create<MavenPublication>("Psychics") {
-            artifactId = project.name
             project.shadow.component(this)
             artifact(tasks["sourcesJar"])
         }
