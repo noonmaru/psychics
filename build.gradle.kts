@@ -66,34 +66,35 @@ tasks {
             expand(project.properties)
         }
     }
-    shadowJar {
-        gradle.taskGraph.whenReady {
-            if (hasTask(":publishPsychicsPublicationToMavenLocal")) {
-                archiveClassifier.set("")
-                println("remove jar classifier")
-            }
-        }
-    }
     create<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+    shadowJar {
+        archiveClassifier.set("dist")
+        relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+        relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
+    }
+    create<Copy>("copyJarToServer") {
+        from(shadowJar)
+        into("W:\\Servers\\psychics\\plugins")
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("Psychics") {
-            project.shadow.component(this)
+            from(components["java"])
             artifact(tasks["sourcesJar"])
         }
     }
 }
 
-if (!hasProperty("debug")) {
+//cancel relocate
+if (hasProperty("debug")) {
     tasks {
         shadowJar {
-            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
-            relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
+            relocators.clear()
         }
     }
 }

@@ -1,6 +1,6 @@
 name: $pluginName
 main: $pluginMain
-depend: [Kotlin, Tap]
+depend: [ Kotlin ]
 api-version: '1.16'
 version: $pluginVersion
 commands:
