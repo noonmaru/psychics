@@ -18,10 +18,13 @@
 package com.github.noonmaru.psychics.plugin
 
 import com.github.noonmaru.psychics.*
+import com.github.noonmaru.psychics.item.isPsychicbound
+import com.github.noonmaru.psychics.item.removeAllPsychicbounds
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -35,6 +38,10 @@ class EventListener : Listener {
         val player = event.player
         Psychics.psychicManager.addPlayer(player)
         Psychics.fakeEntityServer.addPlayer(player)
+
+        if (player.esper.psychic == null) {
+            player.inventory.removeAllPsychicbounds()
+        }
     }
 
     @EventHandler
@@ -63,6 +70,15 @@ class EventListener : Listener {
 
         if (item.type != Material.AIR) {
             player.esper.psychic?.castByWand(item)
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onInventoryInteract(event: InventoryClickEvent) {
+        event.currentItem?.let { item ->
+            if (item.isPsychicbound) {
+                event.isCancelled = true
+            }
         }
     }
 }

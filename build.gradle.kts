@@ -70,6 +70,7 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
+    // build for distributes
     shadowJar {
         archiveClassifier.set("dist")
         relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")

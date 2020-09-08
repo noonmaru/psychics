@@ -19,6 +19,7 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.attribute.EsperAttribute
 import com.github.noonmaru.psychics.attribute.EsperStatistic
+import com.github.noonmaru.psychics.item.removeAllPsychicbounds
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.configuration.file.YamlConfiguration
@@ -91,6 +92,7 @@ class Esper(
             this.psychic = null
             psychic.destroy()
             updateAttribute()
+            player.inventory.removeAllPsychicbounds()
         }
     }
 
