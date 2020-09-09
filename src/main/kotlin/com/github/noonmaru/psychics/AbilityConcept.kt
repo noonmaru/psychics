@@ -61,6 +61,13 @@ open class AbilityConcept {
         protected set
 
     /**
+     * 필요 레벨
+     */
+    @Config(required = false)
+    @RangeInt(min = 0)
+    var levelRequirement = 0
+
+    /**
      * 재사용 대기시간
      */
     @Config(required = false)
