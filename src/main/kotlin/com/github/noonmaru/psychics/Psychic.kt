@@ -17,6 +17,7 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import com.github.noonmaru.psychics.task.TickScheduler
 import com.github.noonmaru.psychics.task.TickTask
 import com.github.noonmaru.psychics.util.Tick
@@ -35,13 +36,20 @@ import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Entity
+import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import java.util.*
 import kotlin.math.max
 
-class Psychic(
+class Psychic internal constructor(
     val concept: PsychicConcept
 ) {
+    lateinit var plugin: PsychicPlugin
+        private set
+
+    lateinit var manager: PsychicManager
+        private set
+
     var mana = 0.0
         set(value) {
             checkState()
@@ -100,11 +108,18 @@ class Psychic(
 
     init {
         abilities = ImmutableList.copyOf(concept.abilityConcepts.map { concept ->
-            concept.createAbilityInstance().apply {
-                initPsychic(this@Psychic)
-                runCatching { onInitialize() }
-            }
+            concept.createAbilityInstance()
         })
+    }
+
+    internal fun initialize(plugin: PsychicPlugin, manager: PsychicManager) {
+        this.plugin = plugin
+        this.manager = manager
+
+        for (ability in abilities) {
+            ability.initPsychic(this)
+            ability.runCatching { onInitialize() }.onFailure { it.printStackTrace() }
+        }
     }
 
     internal fun attach(esper: Esper) {
@@ -256,6 +271,13 @@ class Psychic(
         return scheduler.runTaskTimer(runnable, delay, period)
     }
 
+    fun registerEvents(listener: Listener) {
+        checkState()
+        checkEnabled()
+
+        listeners.add(plugin.entityEventManager.registerEvents(esper.player, listener))
+    }
+
     fun launchProjectile(location: Location, projectile: PsychicProjectile) {
         checkState()
         checkEnabled()
@@ -268,7 +290,7 @@ class Psychic(
         checkState()
         checkEnabled()
 
-        val fakeEntity = Psychics.fakeEntityServer.spawnEntity(location, entityClass)
+        val fakeEntity = manager.plugin.fakeEntityServer.spawnEntity(location, entityClass)
         fakeEntities.add(fakeEntity)
 
         return fakeEntity
@@ -278,7 +300,7 @@ class Psychic(
         checkState()
         checkEnabled()
 
-        val fakeEntity = Psychics.fakeEntityServer.spawnFallingBlock(location, blockData)
+        val fakeEntity = manager.plugin.fakeEntityServer.spawnFallingBlock(location, blockData)
         fakeEntities.add(fakeEntity)
 
         return fakeEntity

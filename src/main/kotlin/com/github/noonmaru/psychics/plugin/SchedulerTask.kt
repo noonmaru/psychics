@@ -17,18 +17,22 @@
 
 package com.github.noonmaru.psychics.plugin
 
-import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.PsychicManager
+import com.github.noonmaru.tap.fake.FakeEntityServer
 
-class SchedulerTask : Runnable {
+class SchedulerTask(
+    val psychicManager: PsychicManager,
+    val fakeEntityServer: FakeEntityServer
+) : Runnable {
 
     override fun run() {
-        for (esper in Psychics.psychicManager.espers) {
+        for (esper in psychicManager.espers) {
             esper.psychic?.run {
                 if (enabled)
                     update()
             }
         }
 
-        Psychics.fakeEntityServer.update()
+        fakeEntityServer.update()
     }
 }

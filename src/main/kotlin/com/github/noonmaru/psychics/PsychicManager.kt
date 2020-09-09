@@ -18,6 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.loader.AbilityLoader
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import com.google.common.collect.ImmutableSortedMap
 import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
@@ -27,9 +28,12 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.jar.JarFile
+import java.util.logging.Logger
 import kotlin.math.min
 
 class PsychicManager(
+    val plugin: PsychicPlugin,
+    val logger: Logger,
     val abilitiesFolder: File,
     val psychicsFolder: File,
     val esperFolder: File
@@ -44,7 +48,7 @@ class PsychicManager(
 
     private val espersByPlayer = IdentityHashMap<Player, Esper>(Bukkit.getMaxPlayers())
 
-    val espers = Collections.unmodifiableCollection(espersByPlayer.values)
+    val espers: Collection<Esper> = Collections.unmodifiableCollection(espersByPlayer.values)
 
     fun getEsper(player: Player): Esper? {
         return espersByPlayer[player]
@@ -70,25 +74,24 @@ class PsychicManager(
     }
 
     internal fun loadAbilities() {
-        Psychics.logger.info("Loading abilities...")
+        plugin.logger.info("Loading abilities...")
 
         val descriptions = loadAbilityDescriptions()
         val map = TreeMap<String, AbilityContainer>()
 
         for ((file, description) in descriptions) {
             abilityLoader.runCatching {
-                val container = load(file, description)
-                map[description.artifactId] = container
+                map[description.artifactId] = load(file, description)
             }.onFailure { exception: Throwable ->
                 exception.printStackTrace()
-                Psychics.logger.warning("Failed to load Ability ${file.name}")
+                plugin.logger.warning("Failed to load Ability ${file.name}")
             }
         }
 
-        Psychics.logger.info("Loaded abilities(${map.count()}):")
+        logger.info("Loaded abilities(${map.count()}):")
 
         for (key in map.keys) {
-            Psychics.logger.info("  - $key")
+            logger.info("  - $key")
         }
 
         abilityContainersById = ImmutableSortedMap.copyOf(map)
@@ -116,7 +119,7 @@ class PsychicManager(
                             legacy = other.first
                         }
 
-                        Psychics.logger.warning("Ambiguous Ability file name. ${legacy.name}")
+                        logger.warning("Ambiguous Ability file name. ${legacy.name}")
                     } else {
                         byId[id] = Pair(abilityFile, description)
                     }
@@ -124,7 +127,7 @@ class PsychicManager(
                 .onFailure { exception ->
                     exception.printStackTrace()
 
-                    Psychics.logger.warning("Failed to load AbilityDescription ${abilityFile.name}")
+                    logger.warning("Failed to load AbilityDescription ${abilityFile.name}")
                 }
         }
 
@@ -173,7 +176,7 @@ class PsychicManager(
                     abilityConcepts += abilityConcept
                 }
 
-                psychicConcept.initializeAbilityConcepts(abilityConcepts)
+                psychicConcept.initializeModules(this, abilityConcepts)
 
                 map[name] = psychicConcept
 
@@ -183,14 +186,14 @@ class PsychicManager(
             }.onFailure { exception ->
                 exception.printStackTrace()
 
-                Psychics.logger.warning("Failed to load Psychic ${psychicFile.name}")
+                logger.warning("Failed to load Psychic ${psychicFile.name}")
             }
         }
 
-        Psychics.logger.info("Loaded psychics(${map.count()}):")
+        logger.info("Loaded psychics(${map.count()}):")
 
         for (key in map.keys) {
-            Psychics.logger.info("  - $key")
+            logger.info("  - $key")
         }
 
         psychicConceptsByName = ImmutableSortedMap.copyOf(map)
@@ -211,12 +214,6 @@ class PsychicManager(
         val container = abilityContainersById[name]
 
         return if (container != null) listOf(container) else emptyList()
-    }
-
-    internal fun loadEspers() {
-        for (player in Bukkit.getOnlinePlayers()) {
-            addPlayer(player)
-        }
     }
 
     companion object {

@@ -25,6 +25,7 @@ import com.github.noonmaru.tap.config.computeConfig
 import com.google.common.collect.ImmutableList
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.BaseComponent
+import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.chat.hover.content.Text
@@ -44,6 +45,9 @@ class PsychicConcept internal constructor() {
         internal const val MANA_REGEN = "mana-regen"
         internal const val DESCRIPTION = "description"
     }
+
+    lateinit var manager: PsychicManager
+        private set
 
     lateinit var name: String
         private set
@@ -121,8 +125,13 @@ class PsychicConcept internal constructor() {
         return ret
     }
 
-    internal fun initializeAbilityConcepts(abilityConcepts: List<AbilityConcept>) {
+    internal fun initializeModules(manager: PsychicManager, abilityConcepts: List<AbilityConcept>) {
+        this.manager = manager
         this.abilityConcepts = ImmutableList.copyOf(abilityConcepts)
+
+        for (abilityConcept in abilityConcepts) {
+            abilityConcept.runCatching { onInitialize() }
+        }
     }
 
     internal fun renderTooltip(): TooltipBuilder {
@@ -145,7 +154,9 @@ class PsychicConcept internal constructor() {
     }
 
     internal fun createInstance(): Psychic {
-        return Psychic(this)
+        return Psychic(this).apply {
+            this.initialize(manager.plugin, manager)
+        }
     }
 }
 
@@ -171,6 +182,7 @@ fun PsychicConcept.createTooltipBook(stats: (EsperStatistic) -> Double): ItemSta
             isBold = true
             isUnderlined = true
             hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(ability.renderTooltip(stats).toString()))
+            clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "psychics supply ${ability.name}")
         }
     }
 

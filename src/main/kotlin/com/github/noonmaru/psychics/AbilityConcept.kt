@@ -28,6 +28,7 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.boss.BarColor
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
+import java.util.logging.Logger
 
 @Name("common")
 open class AbilityConcept {
@@ -38,6 +39,9 @@ open class AbilityConcept {
         private set
 
     lateinit var psychicConcept: PsychicConcept
+        private set
+
+    lateinit var logger: Logger
         private set
 
     /**

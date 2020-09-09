@@ -21,6 +21,7 @@ import com.github.noonmaru.kommand.kommand
 import com.github.noonmaru.psychics.PsychicManager
 import com.github.noonmaru.psychics.Psychics
 import com.github.noonmaru.psychics.command.CommandPsychic
+import com.github.noonmaru.tap.event.EntityEventManager
 import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -30,33 +31,56 @@ import java.io.File
  */
 class PsychicPlugin : JavaPlugin() {
 
-    private var psychicManager: PsychicManager? = null
+    lateinit var fakeEntityServer: FakeEntityServer
+        private set
+
+    lateinit var entityEventManager: EntityEventManager
+        private set
+
+    lateinit var psychicManager: PsychicManager
+        private set
 
     override fun onEnable() {
-        val psychicManager = PsychicManager(
+        loadModules()
+        setupCommands()
+        registerPlayers()
+        Psychics.initialize(this, logger, psychicManager, fakeEntityServer)
+    }
+
+    private fun loadModules() {
+        fakeEntityServer = FakeEntityServer.create(this)
+        entityEventManager = EntityEventManager(this)
+        psychicManager = PsychicManager(
+            this,
+            logger,
             File(dataFolder, "abilities"),
             File(dataFolder, "psychics"),
             File(dataFolder, "espers")
         )
-        val fakeEntityServer = FakeEntityServer.create(this)
-
-        Psychics.initialize(logger, psychicManager, fakeEntityServer)
-
-        server.apply {
-            pluginManager.registerEvents(EventListener(), this@PsychicPlugin)
-            scheduler.runTaskTimer(this@PsychicPlugin, SchedulerTask(), 0L, 1L)
-        }
 
         psychicManager.loadAbilities()
         psychicManager.loadPsychics()
-        psychicManager.loadEspers()
 
-        for (player in server.onlinePlayers) {
-            Psychics.fakeEntityServer.addPlayer(player)
+        server.apply {
+            pluginManager.registerEvents(
+                EventListener(
+                    psychicManager,
+                    fakeEntityServer
+                ), this@PsychicPlugin
+            )
+            scheduler.runTaskTimer(this@PsychicPlugin, SchedulerTask(psychicManager, fakeEntityServer), 0L, 1L)
         }
+    }
 
-        this.psychicManager = psychicManager
+    private fun registerPlayers() {
+        for (player in server.onlinePlayers) {
+            fakeEntityServer.addPlayer(player)
+            psychicManager.addPlayer(player)
+        }
+    }
 
+    private fun setupCommands() {
+        CommandPsychic.initModule(this.psychicManager)
         kommand {
             register("psychics") {
                 CommandPsychic.register(this)
@@ -65,8 +89,8 @@ class PsychicPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        psychicManager?.run {
-            for (esper in espers) {
+        if (this::psychicManager.isInitialized) {
+            for (esper in psychicManager.espers) {
                 esper.save()
                 esper.clear()
             }

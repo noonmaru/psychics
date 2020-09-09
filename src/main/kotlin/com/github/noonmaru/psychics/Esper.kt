@@ -30,7 +30,7 @@ import java.util.*
 import kotlin.math.min
 
 class Esper(
-    val psychicManager: PsychicManager,
+    val manager: PsychicManager,
     player: Player
 ) {
     val player: Player
@@ -53,7 +53,7 @@ class Esper(
     }
 
     private val dataFile
-        get() = File(psychicManager.esperFolder, "${player.uniqueId}.yml")
+        get() = File(manager.esperFolder, "${player.uniqueId}.yml")
 
     fun getAttribute(attr: EsperAttribute): Double {
         return when (attr) {
@@ -123,10 +123,10 @@ class Esper(
             val psychicName = psychicConfig.getString(Psychic.NAME)
 
             if (psychicName != null) {
-                val psychicConcept = psychicManager.getPsychicConcept(psychicName)
+                val psychicConcept = manager.getPsychicConcept(psychicName)
 
                 if (psychicConcept == null) {
-                    Psychics.logger.warning("Failed to attach psychic $psychicName for ${player.name}")
+                    manager.plugin.logger.warning("Failed to attach psychic $psychicName for ${player.name}")
                     return
                 }
 

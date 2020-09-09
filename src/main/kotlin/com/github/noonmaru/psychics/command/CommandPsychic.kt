@@ -21,20 +21,27 @@ import com.github.noonmaru.kommand.KommandBuilder
 import com.github.noonmaru.kommand.KommandContext
 import com.github.noonmaru.kommand.argument.KommandArgument
 import com.github.noonmaru.kommand.argument.player
+import com.github.noonmaru.kommand.argument.suggestions
 import com.github.noonmaru.kommand.sendFeedback
+import com.github.noonmaru.psychics.AbilityConcept
 import com.github.noonmaru.psychics.PsychicConcept
-import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.PsychicManager
 import com.github.noonmaru.psychics.createTooltipBook
-import com.github.noonmaru.psychics.esper
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 internal object CommandPsychic {
+    internal lateinit var manager: PsychicManager
+
+    internal fun initModule(manager: PsychicManager) {
+        this.manager = manager
+    }
+
     fun register(builder: KommandBuilder) {
         builder.apply {
             then("attach") {
                 then("player" to player()) {
-                    then("psychic" to PsychicArgument) {
+                    then("psychic" to PsychicConceptArgument) {
                         executes {
                             attach(it.sender, it.parseArgument("player"), it.parseArgument("psychic"))
                         }
@@ -42,10 +49,18 @@ internal object CommandPsychic {
                 }
             }
             then("info") {
-                then("psychic" to PsychicArgument) {
+                then("psychic" to PsychicConceptArgument) {
                     require { this is Player }
                     executes {
                         info(it.sender as Player, it.parseArgument("psychic"))
+                    }
+                }
+            }
+            then("supply") {
+                then("ability" to AbilityConceptArgument) {
+                    require(this is Player)
+                    executes {
+                        supply(it.sender as Player, it.parseArgument("ability"))
                     }
                 }
             }
@@ -53,23 +68,54 @@ internal object CommandPsychic {
     }
 
     private fun info(sender: Player, psychicConcept: PsychicConcept) {
-        val tooltip = psychicConcept.createTooltipBook { sender.esper.getStatistic(it) }
+        val tooltip = psychicConcept.createTooltipBook { requireNotNull(manager.getEsper(sender)).getStatistic(it) }
         sender.inventory.addItem(tooltip)
     }
 
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
-        player.esper.attachPsychic(psychicConcept).enabled = true
+        requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).enabled = true
         sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
+    }
+
+    private fun supply(sender: Player, abilityConcept: AbilityConcept) {
+        val inv = sender.inventory
+
+        for (item in abilityConcept.supplyItems()) {
+            inv.addItem(item)
+        }
     }
 }
 
-object PsychicArgument : KommandArgument<PsychicConcept> {
+object PsychicConceptArgument : KommandArgument<PsychicConcept> {
     override fun parse(context: KommandContext, param: String): PsychicConcept? {
-        return Psychics.psychicManager.getPsychicConcept(param)
+        return CommandPsychic.manager.getPsychicConcept(param)
     }
 
     override fun listSuggestion(context: KommandContext, target: String): Collection<String> {
-        return Psychics.psychicManager.psychicConceptsByName.keys.asSequence().filter { it.startsWith(target, true) }
+        return CommandPsychic.manager.psychicConceptsByName.keys.asSequence().filter { it.startsWith(target, true) }
             .toList()
+    }
+}
+
+object AbilityConceptArgument : KommandArgument<AbilityConcept> {
+    override fun parse(context: KommandContext, param: String): AbilityConcept? {
+        val sender = context.sender
+
+        if (sender is Player) {
+            return CommandPsychic.manager.getEsper(sender)?.psychic?.concept?.abilityConcepts?.find { it.name == param }
+        }
+
+        return null
+    }
+
+    override fun listSuggestion(context: KommandContext, target: String): Collection<String> {
+        val sender = context.sender
+
+        if (sender is Player) {
+            return CommandPsychic.manager.getEsper(sender)?.psychic?.concept?.abilityConcepts?.suggestions(target) { it.name }
+                ?: emptyList()
+        }
+
+        return emptyList()
     }
 }

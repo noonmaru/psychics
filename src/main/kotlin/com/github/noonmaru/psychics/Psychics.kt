@@ -17,11 +17,15 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.entity.Player
 import java.util.logging.Logger
 
 object Psychics {
+    lateinit var plugin: PsychicPlugin
+        private set
+
     lateinit var logger: Logger
         private set
 
@@ -31,7 +35,13 @@ object Psychics {
     lateinit var fakeEntityServer: FakeEntityServer
         private set
 
-    fun initialize(logger: Logger, psychicManager: PsychicManager, fakeEntityServer: FakeEntityServer) {
+    internal fun initialize(
+        plugin: PsychicPlugin,
+        logger: Logger,
+        psychicManager: PsychicManager,
+        fakeEntityServer: FakeEntityServer
+    ) {
+        this.plugin = plugin
         this.logger = logger
         this.psychicManager = psychicManager
         this.fakeEntityServer = fakeEntityServer

@@ -20,8 +20,10 @@ package com.github.noonmaru.psychics.plugin
 import com.github.noonmaru.psychics.*
 import com.github.noonmaru.psychics.item.isPsychicbound
 import com.github.noonmaru.psychics.item.removeAllPsychicbounds
+import com.github.noonmaru.tap.fake.FakeEntityServer
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -35,12 +37,15 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
-class EventListener : Listener {
+class EventListener(
+    val psychicManager: PsychicManager,
+    val fakeEntityServer: FakeEntityServer
+) : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val player = event.player
-        Psychics.psychicManager.addPlayer(player)
-        Psychics.fakeEntityServer.addPlayer(player)
+        psychicManager.addPlayer(player)
+        fakeEntityServer.addPlayer(player)
 
         if (player.esper.psychic == null) {
             player.inventory.removeAllPsychicbounds()
@@ -50,8 +55,8 @@ class EventListener : Listener {
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         val player = event.player
-        Psychics.psychicManager.removePlayer(player)
-        Psychics.fakeEntityServer.removePlayer(player)
+        psychicManager.removePlayer(player)
+        fakeEntityServer.removePlayer(player)
     }
 
     @EventHandler
@@ -96,6 +101,9 @@ class EventListener : Listener {
     fun onItemSpawn(event: ItemSpawnEvent) {
         if (event.entity.itemStack.isPsychicbound) event.isCancelled = true
     }
+
+    private val Player.esper: Esper
+        get() = requireNotNull(psychicManager.getEsper(this))
 }
 
 private fun Psychic.castByWand(item: ItemStack) {
