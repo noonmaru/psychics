@@ -24,11 +24,9 @@ import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.entity.ItemSpawnEvent
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.player.PlayerInteractEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
@@ -73,6 +71,7 @@ class EventListener : Listener {
         }
     }
 
+    //psychicbound codes
     @EventHandler(ignoreCancelled = true)
     fun onInventoryInteract(event: InventoryClickEvent) {
         event.currentItem?.let { item ->
@@ -80,6 +79,16 @@ class EventListener : Listener {
                 event.isCancelled = true
             }
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        if (event.itemDrop.itemStack.isPsychicbound) event.isCancelled = true
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onItemSpawn(event: ItemSpawnEvent) {
+        if (event.entity.itemStack.isPsychicbound) event.isCancelled = true
     }
 }
 
