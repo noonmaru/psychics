@@ -182,16 +182,18 @@ open class AbilityConcept {
     internal fun renderTooltip(stats: (EsperStatistic) -> Double = { 0.0 }): TooltipBuilder {
         val tooltip = TooltipBuilder().apply {
             title = String.format("%s%s%-16s%s%16s", ChatColor.GOLD, ChatColor.BOLD, displayName, ChatColor.RESET, type)
+            addStats(ChatColor.GREEN, "필요 레벨", levelRequirement, "레벨")
             addStats(ChatColor.AQUA, "재사용 대기시간", cooldownTicks / 20.0, "초")
             addStats(ChatColor.DARK_AQUA, "마나 소모", cost)
             addStats(ChatColor.BLUE, "${if (interruptible) "집중" else "시전"} 시간", castingTicks / 20.0, "초")
             addStats(ChatColor.DARK_GREEN, "지속 시간", durationTicks / 20.0, "초")
             addStats(ChatColor.LIGHT_PURPLE, "사거리", range, "블록")
-            addStats(ChatColor.GREEN, "치유량", "<healing>", healing)
+            addStats(ChatColor.WHITE, "치유량", "<healing>", healing)
             addStats("damage", damage)
             addDescription(description)
             addTemplates(
                 "display-name" to displayName,
+                "level-requirement" to levelRequirement,
                 "cooldown-time" to cooldownTicks / 20.0,
                 "cost" to cost,
                 "casting-time" to castingTicks / 20.0,
@@ -213,6 +215,14 @@ open class AbilityConcept {
         }
     }
 
+    internal fun supplyItems(): List<ItemStack> {
+        return runCatching {
+            onSupplyItems()
+        }.onFailure { exception ->
+            exception.printStackTrace()
+        }.getOrElse { emptyList() }
+    }
+
     /**
      * 필드 변수 적용 후 호출
      */
@@ -222,4 +232,9 @@ open class AbilityConcept {
      * 툴팁 요청 시 호출
      */
     open fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {}
+
+    /**
+     * 지급 아이템 요청 시 호출
+     */
+    open fun onSupplyItems() = emptyList<ItemStack>()
 }
