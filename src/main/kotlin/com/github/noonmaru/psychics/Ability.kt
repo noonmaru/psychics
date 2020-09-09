@@ -66,6 +66,7 @@ abstract class Ability<T : AbilityConcept> {
     open fun test(): TestResult {
         val psychic = psychic
 
+        if (esper.player.level < concept.levelRequirement) TestResult.FAILED_LEVEL
         if (!psychic.enabled) return TestResult.FAILED_DISABLED
         if (cooldownTicks > 0L) return TestResult.FAILED_COOLDOWN
         if (psychic.mana < concept.cost) return TestResult.FAILED_COST
@@ -198,6 +199,9 @@ class TestResult private constructor(
 ) {
     companion object {
         val SUCCESS = create("성공")
+        val FAILED_LEVEL = create("${ChatColor.BOLD}레벨이 부족합니다") { message, ability ->
+            "$message ${ChatColor.RESET}(${ability.concept.levelRequirement}${ChatColor.BOLD}초)"
+        }
         val FAILED_DISABLED = create("${ChatColor.BOLD}능력을 사용 할 수 없습니다.")
         val FAILED_COOLDOWN = create("${ChatColor.BOLD}아직 준비되지 않았습니다.") { message, ability ->
             "$message ${ChatColor.RESET}(${(ability.cooldownTicks + 19) / 20}${ChatColor.BOLD}초)"
