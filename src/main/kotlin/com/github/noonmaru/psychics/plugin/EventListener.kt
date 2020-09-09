@@ -20,13 +20,18 @@ package com.github.noonmaru.psychics.plugin
 import com.github.noonmaru.psychics.*
 import com.github.noonmaru.psychics.item.isPsychicbound
 import com.github.noonmaru.psychics.item.removeAllPsychicbounds
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.ItemSpawnEvent
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.player.*
+import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
@@ -74,16 +79,17 @@ class EventListener : Listener {
     //psychicbound codes
     @EventHandler(ignoreCancelled = true)
     fun onInventoryInteract(event: InventoryClickEvent) {
-        event.currentItem?.let { item ->
-            if (item.isPsychicbound) {
-                event.isCancelled = true
+        if (event.whoClicked.gameMode == GameMode.CREATIVE) return
+
+        val type = event.inventory.type
+
+        if (type != InventoryType.CRAFTING) {
+            event.currentItem?.let { item ->
+                if (item.isPsychicbound) {
+                    event.isCancelled = true
+                }
             }
         }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun onPlayerDropItem(event: PlayerDropItemEvent) {
-        if (event.itemDrop.itemStack.isPsychicbound) event.isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
