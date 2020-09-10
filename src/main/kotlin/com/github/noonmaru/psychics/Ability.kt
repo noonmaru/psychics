@@ -17,11 +17,15 @@
 
 package com.github.noonmaru.psychics
 
+import com.github.noonmaru.psychics.damage.Damage
+import com.github.noonmaru.psychics.damage.damage
 import com.github.noonmaru.psychics.util.TargetFilter
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.ref.UpstreamReference
 import net.md_5.bungee.api.ChatColor
+import org.bukkit.Location
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.entity.LivingEntity
 import kotlin.math.max
 
 abstract class Ability<T : AbilityConcept> {
@@ -187,6 +191,17 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     open fun onChannel(target: Any?) {}
 
     open fun onInterrupt(target: Any?) {}
+
+    fun LivingEntity.damage(
+        damage: Damage,
+        knockBackLocation: Location? = esper.player.location,
+        knockBack: Double = 0.0
+    ) {
+        val type = damage.type
+        val amount = esper.getStatistic(damage.stats)
+
+        damage(type, amount, esper.player, knockBackLocation, knockBack)
+    }
 }
 
 fun Ability<*>.targetFilter(): TargetFilter {

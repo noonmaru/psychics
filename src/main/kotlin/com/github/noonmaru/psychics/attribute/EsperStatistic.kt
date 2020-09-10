@@ -22,6 +22,8 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 import org.bukkit.configuration.serialization.ConfigurationSerialization
 import java.util.*
+import kotlin.math.exp
+import kotlin.math.max
 
 class EsperStatistic internal constructor(pairs: List<Pair<EsperAttribute, Double>>) : ConfigurationSerializable {
     internal val stats: Map<EsperAttribute, Double>
@@ -78,5 +80,24 @@ class EsperStatistic internal constructor(pairs: List<Pair<EsperAttribute, Doubl
         fun of(pairs: List<Pair<EsperAttribute, Double>>): EsperStatistic {
             return EsperStatistic(pairs)
         }
+
+        /**
+         * 레벨별 데미지를 반환합니다.
+         *
+         * 40레벨 기준 25의 피해
+         *
+         * 최대 26.8의 피해
+         *
+         * [sigmoid function](https://www.desmos.com/calculator/kn9tpwdan5)
+         */
+        @JvmStatic
+        fun calculateAttachDamageByLevel(level: Int): Double {
+            //https://www.desmos.com/calculator/kn9tpwdan5
+            val b = -0.083
+            val k = 25.8
+
+            return 1.0 + (k * 2.0 / (1.0 + exp(max(0, level) * b))) - k
+        }
     }
+
 }

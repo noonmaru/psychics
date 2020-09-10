@@ -30,10 +30,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.entity.ItemSpawnEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
-import org.bukkit.event.player.PlayerInteractEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
@@ -67,7 +64,17 @@ class EventListener(
 
         if (action != Action.PHYSICAL && hand == EquipmentSlot.HAND && item != null) {
             val player = event.player
-            player.esper.psychic?.castByWand(item)
+            player.esper.psychic?.let { psychic ->
+                player.esper.psychic?.castByWand(item)
+
+                if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
+                    val type = item.type
+
+                    if (type == Material.WRITTEN_BOOK && item.isPsychicWrittenBook) {
+                        psychic.concept.updateTooltipBook(item, psychic.esper::getStatistic)
+                    }
+                }
+            }
         }
     }
 
@@ -100,6 +107,22 @@ class EventListener(
     @EventHandler(ignoreCancelled = true)
     fun onItemSpawn(event: ItemSpawnEvent) {
         if (event.entity.itemStack.isPsychicbound) event.isCancelled = true
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        val player = event.player
+
+        if (player.isSneaking) {
+            val item = event.itemDrop.itemStack
+
+            if (item.type == Material.WRITTEN_BOOK && item.isPsychicWrittenBook) {
+                player.esper.psychic?.let { psychic ->
+                    psychic.concept.updateTooltipBook(item, psychic.esper::getStatistic)
+                    event.isCancelled = true
+                }
+            }
+        }
     }
 
     private val Player.esper: Esper

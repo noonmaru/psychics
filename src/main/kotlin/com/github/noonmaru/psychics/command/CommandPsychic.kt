@@ -23,12 +23,11 @@ import com.github.noonmaru.kommand.argument.KommandArgument
 import com.github.noonmaru.kommand.argument.player
 import com.github.noonmaru.kommand.argument.suggestions
 import com.github.noonmaru.kommand.sendFeedback
-import com.github.noonmaru.psychics.AbilityConcept
-import com.github.noonmaru.psychics.PsychicConcept
-import com.github.noonmaru.psychics.PsychicManager
-import com.github.noonmaru.psychics.createTooltipBook
+import com.github.noonmaru.psychics.*
+import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 internal object CommandPsychic {
     internal lateinit var manager: PsychicManager
@@ -55,10 +54,19 @@ internal object CommandPsychic {
                         info(it.sender as Player, it.parseArgument("psychic"))
                     }
                 }
+                require { this is Player && requireNotNull(manager.getEsper(this)).psychic != null }
+                executes {
+                    val sender = it.sender as Player
+                    info(sender, manager.getEsper(sender)!!.psychic!!.concept)
+                }
             }
             then("supply") {
+                require { this is Player }
+                executes {
+                    supply(it.sender as Player)
+                }
                 then("ability" to AbilityConceptArgument) {
-                    require(this is Player)
+                    require { this is Player }
                     executes {
                         supply(it.sender as Player, it.parseArgument("ability"))
                     }
@@ -68,8 +76,17 @@ internal object CommandPsychic {
     }
 
     private fun info(sender: Player, psychicConcept: PsychicConcept) {
+        val inv = sender.inventory
+
+        for (itemStack in inv) {
+            if (itemStack != null && itemStack.type == Material.WRITTEN_BOOK && itemStack.isPsychicWrittenBook) {
+                psychicConcept.updateTooltipBook(itemStack, requireNotNull(manager.getEsper(sender))::getStatistic)
+                return
+            }
+        }
+
         val tooltip = psychicConcept.createTooltipBook { requireNotNull(manager.getEsper(sender)).getStatistic(it) }
-        sender.inventory.addItem(tooltip)
+        inv.addItem(tooltip)
     }
 
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
@@ -77,13 +94,37 @@ internal object CommandPsychic {
         sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
     }
 
+    private fun supply(sender: Player) {
+        val esper = requireNotNull(manager.getEsper(sender))
+        esper.psychic?.let {
+            for (abilityConcept in it.concept.abilityConcepts) {
+                supply(sender, abilityConcept)
+            }
+        }
+    }
+
     private fun supply(sender: Player, abilityConcept: AbilityConcept) {
         val inv = sender.inventory
+        val items = abilityConcept.supplyItems()
 
-        for (item in abilityConcept.supplyItems()) {
+        out@ for (item in items) {
+            for (invItem in inv) {
+                if (invItem == null)
+                    continue
+                if (invItem.isSimilarLore(item))
+                    continue@out
+            }
+
             inv.addItem(item)
         }
     }
+}
+
+private fun ItemStack.isSimilarLore(other: ItemStack): Boolean {
+    val meta = itemMeta
+    val otherMeta = other.itemMeta
+
+    return type == other.type && data == other.data && meta.displayName == itemMeta.displayName && meta.lore == otherMeta.lore
 }
 
 object PsychicConceptArgument : KommandArgument<PsychicConcept> {

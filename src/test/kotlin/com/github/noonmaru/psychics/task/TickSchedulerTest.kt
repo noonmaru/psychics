@@ -30,7 +30,7 @@ class TickSchedulerTest {
 
     @Test
     fun test() {
-        val scheduler = TickScheduler(1)
+        val scheduler = TickScheduler()
         val queue = Whitebox.getInternalState<PriorityQueue<TickTask>>(scheduler, "queue")
 
         val taskA = scheduler.runTask({
@@ -43,6 +43,8 @@ class TickSchedulerTest {
 
         assertEquals(2, queue.count())
 
+        Thread.sleep(50L)
+
         scheduler.run()
         assertEquals(1, countA)
         assertEquals(1, countB)
@@ -50,11 +52,15 @@ class TickSchedulerTest {
         assertTrue(taskA.isDone)
         assertTrue(taskB.isScheduled)
 
+        Thread.sleep(50L)
+
         scheduler.run()
         assertEquals(1, countA)
         assertEquals(2, countB)
         assertEquals(1, queue.count())
         assertTrue(taskB.isScheduled)
+
+        Thread.sleep(50L)
 
         //cancel and run
         scheduler.run()
@@ -62,6 +68,8 @@ class TickSchedulerTest {
         assertEquals(3, countB)
         assertEquals(1, queue.count())
         assertTrue(taskB.isCancelled)
+
+        Thread.sleep(50L)
 
         scheduler.run()
         assertEquals(3, countB)

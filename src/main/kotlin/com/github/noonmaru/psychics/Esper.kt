@@ -27,7 +27,6 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.*
-import kotlin.math.min
 
 class Esper(
     val manager: PsychicManager,
@@ -46,18 +45,18 @@ class Esper(
     val isOnline
         get() = playerRef.get() != null
 
+    private val dataFile
+        get() = File(manager.esperFolder, "${player.uniqueId}.yml")
+
     init {
         val uniqueId = player.uniqueId
 
         attributeUniqueId = UUID(uniqueId.leastSignificantBits.inv(), uniqueId.mostSignificantBits.inv())
     }
 
-    private val dataFile
-        get() = File(manager.esperFolder, "${player.uniqueId}.yml")
-
     fun getAttribute(attr: EsperAttribute): Double {
         return when (attr) {
-            EsperAttribute.ATTACK_DAMAGE -> min(25.0, player.level * 0.4)
+            EsperAttribute.ATTACK_DAMAGE -> EsperStatistic.calculateAttachDamageByLevel(player.level)
             EsperAttribute.LEVEL -> player.level.toDouble()
             EsperAttribute.DEFENSE -> player.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
             EsperAttribute.HEALTH -> player.health
@@ -77,9 +76,7 @@ class Esper(
         return ret
     }
 
-    fun attachPsychic(concept: PsychicConcept): Psychic {
-        detachPsychic()
-
+    private fun setPsychic(concept: PsychicConcept): Psychic {
         val psychic = concept.createInstance()
         this.psychic = psychic
         psychic.attach(this@Esper)
@@ -87,13 +84,23 @@ class Esper(
         return psychic
     }
 
-    fun detachPsychic() {
+    fun attachPsychic(concept: PsychicConcept): Psychic {
+        detachPsychic()
+
+        return setPsychic(concept)
+    }
+
+    private fun removePsychic() {
         psychic?.let { psychic ->
             this.psychic = null
             psychic.destroy()
             updateAttribute()
-            player.inventory.removeAllPsychicbounds()
         }
+    }
+
+    fun detachPsychic() {
+        removePsychic()
+        player.inventory.removeAllPsychicbounds()
     }
 
     private fun updateAttribute() {
@@ -130,7 +137,7 @@ class Esper(
                     return
                 }
 
-                val psychic = attachPsychic(psychicConcept)
+                val psychic = setPsychic(psychicConcept)
                 psychic.load(psychicConfig)
             }
         }

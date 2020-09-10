@@ -63,7 +63,7 @@ class PsychicManager(
             val esper = Esper(this, it)
             esper.load()
             esper
-        }.load()
+        }
     }
 
     internal fun removePlayer(player: Player) {

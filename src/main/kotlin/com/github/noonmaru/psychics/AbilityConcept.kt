@@ -185,7 +185,7 @@ open class AbilityConcept {
 
     internal fun renderTooltip(stats: (EsperStatistic) -> Double = { 0.0 }): TooltipBuilder {
         val tooltip = TooltipBuilder().apply {
-            title = String.format("%s%s%-16s%s%16s", ChatColor.GOLD, ChatColor.BOLD, displayName, ChatColor.RESET, type)
+            title = String.format("%s%s%-19s%s%19s", ChatColor.GOLD, ChatColor.BOLD, displayName, ChatColor.RESET, type)
             addStats(ChatColor.GREEN, "필요 레벨", levelRequirement, "레벨")
             addStats(ChatColor.AQUA, "재사용 대기시간", cooldownTicks / 20.0, "초")
             addStats(ChatColor.DARK_AQUA, "마나 소모", cost)

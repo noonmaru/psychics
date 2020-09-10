@@ -20,24 +20,13 @@ package com.github.noonmaru.psychics.task
 import java.util.*
 import kotlin.math.max
 
-class TickScheduler(
-    private val ticker: () -> Long = DefaultTicker()
-) : Runnable {
-    private class DefaultTicker : () -> Long {
-        private val initNanoTime = System.nanoTime()
-
-        override fun invoke(): Long {
-            val elapsedNanoTime = System.nanoTime() - initNanoTime
-
-            return elapsedNanoTime / (1000L * 1000L * 50L)
-        }
-    }
-
-    constructor(tick: Long) : this({ tick })
-
+class TickScheduler : Runnable {
     private val queue = PriorityQueue<TickTask>()
 
+    private val initNanoTime = System.nanoTime()
+
     var currentTicks = 0L
+        private set
 
     fun runTask(runnable: Runnable, delay: Long): TickTask {
         TickTask(this, runnable, delay).apply {
@@ -56,10 +45,11 @@ class TickScheduler(
     }
 
     private fun nextTick(): Long {
-        val nextTick = currentTicks + ticker()
-        currentTicks = nextTick
+        val elapsedNanoTime = System.nanoTime() - initNanoTime
+        val currentTicks = elapsedNanoTime / (50L * 1000L * 1000L)
+        this.currentTicks = currentTicks
 
-        return nextTick
+        return currentTicks
     }
 
     override fun run() {

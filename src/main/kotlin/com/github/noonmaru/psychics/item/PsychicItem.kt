@@ -1,16 +1,17 @@
 package com.github.noonmaru.psychics.item
 
+import com.github.noonmaru.psychics.isPsychicWrittenBook
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 
 object PsychicItem {
-    val boundTag = "${ChatColor.RED}${ChatColor.BOLD} 능력 귀속"
+    val boundTag = "${ChatColor.RED}${ChatColor.BOLD}능력 귀속"
 }
 
 var ItemStack.isPsychicbound
-    get() = itemMeta.lore?.let { PsychicItem.boundTag in it } ?: false
+    get() = itemMeta?.lore?.let { PsychicItem.boundTag in it } ?: false
     set(value) {
         val meta = itemMeta
         val lore = meta.lore ?: ArrayList<String>(1)
@@ -50,7 +51,7 @@ fun Inventory.removeAllPsychicbounds() {
     for (i in 0 until count()) {
         val item = getItem(i)
 
-        if (item != null && item.isPsychicbound) {
+        if (item != null && item.isPsychicbound && !item.isPsychicWrittenBook) {
             setItem(i, null)
         }
     }
