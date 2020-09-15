@@ -188,7 +188,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
 
     abstract fun onCast(target: Any?)
 
-    open fun onChannel(target: Any?) {}
+    open fun onChannel(remainingTicks: Long, target: Any?) {}
 
     open fun onInterrupt(target: Any?) {}
 

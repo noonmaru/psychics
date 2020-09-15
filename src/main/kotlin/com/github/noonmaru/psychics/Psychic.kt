@@ -355,7 +355,7 @@ class Psychic internal constructor(
         projectileManager.update()
 
         channeling?.let { channel ->
-            val remainTicks = channel.remainTicks
+            val remainTicks = channel.remainingTicks
 
             castingBar.progress = 1.0 - remainTicks.toDouble() / channel.ability.concept.castingTicks.toDouble()
 
@@ -400,11 +400,11 @@ class Psychic internal constructor(
 class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Long, val target: Any? = null) {
     private val channelTick = Tick.currentTicks + castingTicks
 
-    val remainTicks
+    val remainingTicks
         get() = max(0, channelTick - Tick.currentTicks)
 
     internal fun channel() {
-        ability.runCatching { onChannel(target) }
+        ability.runCatching { onChannel(remainingTicks, target) }
     }
 
     internal fun cast() {
