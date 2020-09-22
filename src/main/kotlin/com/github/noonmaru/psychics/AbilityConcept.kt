@@ -170,7 +170,8 @@ open class AbilityConcept {
         this.name = name
         this.container = container
         this.psychicConcept = psychicConcept
-        this.displayName = container.description.name
+        if (!this::displayName.isInitialized)
+            this.displayName = container.description.name
 
         if (ActiveAbility::class.java.isAssignableFrom(container.abilityClass)) {
             type = AbilityType.ACTIVE

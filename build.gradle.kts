@@ -16,7 +16,7 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.4.0"
+    kotlin("jvm") version "1.4.10"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     `maven-publish`
 }
@@ -35,8 +35,8 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8")) //kotlin
     compileOnly(kotlin("reflect"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    implementation("com.github.noonmaru:tap:3.0.1")
-    implementation("com.github.noonmaru:kommand:0.3")
+    implementation("com.github.noonmaru:tap:3.1.2")
+    implementation("com.github.noonmaru:kommand:0.3.2")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
