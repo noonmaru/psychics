@@ -35,6 +35,7 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8")) //kotlin
     compileOnly(kotlin("reflect"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
+    compileOnly("com.github.noonmaru:inv-fx:1.1.1")
     implementation("com.github.noonmaru:tap:3.1.2")
     implementation("com.github.noonmaru:kommand:0.3.2")
 
