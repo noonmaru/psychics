@@ -192,7 +192,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
 
     open fun onInterrupt(target: Any?) {}
 
-    fun LivingEntity.damage(
+    fun LivingEntity.psychicDamage(
         damage: Damage,
         knockBackLocation: Location? = esper.player.location,
         knockBack: Double = 0.0
