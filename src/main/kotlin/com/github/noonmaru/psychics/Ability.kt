@@ -18,7 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.damage.Damage
-import com.github.noonmaru.psychics.damage.damage
+import com.github.noonmaru.psychics.damage.abilityDamage
 import com.github.noonmaru.psychics.util.TargetFilter
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.ref.UpstreamReference
@@ -200,7 +200,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
         val type = damage.type
         val amount = esper.getStatistic(damage.stats)
 
-        damage(type, amount, esper.player, knockBackLocation, knockBack)
+        abilityDamage(type, amount, esper.player, knockBack, knockBackLocation)
     }
 }
 

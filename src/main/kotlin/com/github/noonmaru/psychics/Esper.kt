@@ -19,6 +19,7 @@ package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.attribute.EsperAttribute
 import com.github.noonmaru.psychics.attribute.EsperStatistic
+import com.github.noonmaru.psychics.damage.DamageSupport
 import com.github.noonmaru.psychics.item.removeAllPsychicbounds
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
@@ -54,9 +55,12 @@ class Esper(
         attributeUniqueId = UUID(uniqueId.leastSignificantBits.inv(), uniqueId.mostSignificantBits.inv())
     }
 
+    /**
+     * 능력치를 가져옵니다.
+     */
     fun getAttribute(attr: EsperAttribute): Double {
         return when (attr) {
-            EsperAttribute.ATTACK_DAMAGE -> EsperStatistic.calculateAttachDamageByLevel(player.level)
+            EsperAttribute.ATTACK_DAMAGE -> DamageSupport.calculateAttackDamage(player.level)
             EsperAttribute.LEVEL -> player.level.toDouble()
             EsperAttribute.DEFENSE -> player.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
             EsperAttribute.HEALTH -> player.health
