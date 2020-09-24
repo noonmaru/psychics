@@ -23,6 +23,11 @@ import com.github.noonmaru.psychics.Psychics
 import com.github.noonmaru.psychics.command.CommandPsychic
 import com.github.noonmaru.tap.event.EntityEventManager
 import com.github.noonmaru.tap.fake.FakeEntityServer
+import com.github.noonmaru.tap.util.GitHubSupport
+import com.github.noonmaru.tap.util.UpToDateException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -80,7 +85,7 @@ class PsychicPlugin : JavaPlugin() {
     }
 
     private fun setupCommands() {
-        CommandPsychic.initModule(this.psychicManager)
+        CommandPsychic.initModule(this, this.psychicManager)
         kommand {
             register("psychics") {
                 CommandPsychic.register(this)
@@ -90,10 +95,33 @@ class PsychicPlugin : JavaPlugin() {
 
     override fun onDisable() {
         if (this::psychicManager.isInitialized) {
-            for (esper in psychicManager.espers) {
-                esper.save()
-                esper.clear()
+            psychicManager.unload()
+        }
+    }
+
+    // Update example
+    internal fun update(sender: CommandSender) {
+        sender.sendMessage("Attempt to update.")
+        update {
+            onSuccess { url ->
+                sender.sendMessage("Updated successfully. Applies after the server restarts.")
+                sender.sendMessage(url)
             }
+            onFailure { t ->
+                if (t is UpToDateException) sender.sendMessage("Up to date!")
+                else {
+                    sender.sendMessage("Update failed. Check the console.")
+                    t.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun update(callback: (Result<String>.() -> Unit)? = null) {
+        GlobalScope.launch {
+            val file = file
+            val updateFile = File(file.parentFile, "update/${file.name}")
+            GitHubSupport.downloadUpdate(updateFile, "noonmaru", "psychics", description.version, callback)
         }
     }
 }

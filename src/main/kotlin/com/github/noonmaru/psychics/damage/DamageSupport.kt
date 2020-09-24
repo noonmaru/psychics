@@ -151,7 +151,7 @@ fun LivingEntity.getProtection(enchantment: Enchantment): Int {
  *
  * 마인크래프트 피해 계산식이 아닌 [DamageSupport.calculatePsychicDamage]로 계산된 피해를 입힙니다.
  */
-fun LivingEntity.abilityDamage(
+fun LivingEntity.psychicDamage(
     type: DamageType,
     damage: Double,
     source: Player,

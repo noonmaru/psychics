@@ -1,13 +1,12 @@
 package com.github.noonmaru.psychics.item
 
-import com.github.noonmaru.psychics.isPsychicWrittenBook
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 
 object PsychicItem {
-    val boundTag = "${ChatColor.RED}${ChatColor.BOLD}능력 귀속"
+    val boundTag = "${ChatColor.RED}${ChatColor.BOLD}Psychicbound"
 }
 
 var ItemStack.isPsychicbound
@@ -51,8 +50,28 @@ fun Inventory.removeAllPsychicbounds() {
     for (i in 0 until count()) {
         val item = getItem(i)
 
-        if (item != null && item.isPsychicbound && !item.isPsychicWrittenBook) {
+        if (item != null && item.isPsychicbound) {
             setItem(i, null)
         }
     }
+}
+
+fun Inventory.addItemNonDuplicate(items: Collection<ItemStack>) {
+    out@ for (item in items) {
+        for (invItem in this) {
+            if (invItem == null)
+                continue
+            if (invItem.isSimilarLore(item))
+                continue@out
+        }
+
+        addItem(item)
+    }
+}
+
+private fun ItemStack.isSimilarLore(other: ItemStack): Boolean {
+    val meta = itemMeta
+    val otherMeta = other.itemMeta
+
+    return type == other.type && data == other.data && meta.displayName == itemMeta.displayName && meta.lore == otherMeta.lore
 }

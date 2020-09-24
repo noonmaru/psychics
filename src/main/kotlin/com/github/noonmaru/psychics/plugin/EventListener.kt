@@ -64,17 +64,7 @@ class EventListener(
 
         if (action != Action.PHYSICAL && hand == EquipmentSlot.HAND && item != null) {
             val player = event.player
-            player.esper.psychic?.let { psychic ->
-                player.esper.psychic?.castByWand(item)
-
-                if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-                    val type = item.type
-
-                    if (type == Material.WRITTEN_BOOK && item.isPsychicWrittenBook) {
-                        psychic.concept.updateTooltipBook(item, psychic.esper::getStatistic)
-                    }
-                }
-            }
+            player.esper.psychic?.castByWand(item)
         }
     }
 
@@ -88,9 +78,9 @@ class EventListener(
         }
     }
 
-    //psychicbound codes
+    //psychicbound
     @EventHandler(ignoreCancelled = true)
-    fun onInventoryInteract(event: InventoryClickEvent) {
+    fun onInventoryClick(event: InventoryClickEvent) {
         if (event.whoClicked.gameMode == GameMode.CREATIVE) return
 
         val type = event.inventory.type
@@ -111,16 +101,12 @@ class EventListener(
 
     @EventHandler(ignoreCancelled = true)
     fun onPlayerDropItem(event: PlayerDropItemEvent) {
-        val player = event.player
-
-        if (player.isSneaking) {
-            val item = event.itemDrop.itemStack
-
-            if (item.type == Material.WRITTEN_BOOK && item.isPsychicWrittenBook) {
-                player.esper.psychic?.let { psychic ->
-                    psychic.concept.updateTooltipBook(item, psychic.esper::getStatistic)
-                    event.isCancelled = true
-                }
+        val item = event.itemDrop
+        if (item.itemStack.isPsychicbound) {
+            if (event.player.isSneaking) {
+                item.remove()
+            } else {
+                event.isCancelled = true
             }
         }
     }

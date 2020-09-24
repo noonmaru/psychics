@@ -17,25 +17,15 @@
 
 package com.github.noonmaru.psychics
 
-import com.github.noonmaru.psychics.attribute.EsperStatistic
-import com.github.noonmaru.psychics.item.isPsychicbound
 import com.github.noonmaru.psychics.tooltip.TooltipBuilder
 import com.github.noonmaru.tap.config.Config
 import com.github.noonmaru.tap.config.RangeDouble
 import com.github.noonmaru.tap.config.computeConfig
 import com.google.common.collect.ImmutableList
 import net.md_5.bungee.api.ChatColor
-import net.md_5.bungee.api.chat.BaseComponent
-import net.md_5.bungee.api.chat.ClickEvent
-import net.md_5.bungee.api.chat.HoverEvent
-import net.md_5.bungee.api.chat.TextComponent
-import net.md_5.bungee.api.chat.hover.content.Text
 import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.boss.BarColor
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.BookMeta
 
 class PsychicConcept internal constructor() {
     companion object {
@@ -162,59 +152,3 @@ class PsychicConcept internal constructor() {
         }
     }
 }
-
-private val PSYCHIC_AUTHOR = "${ChatColor.RED}${ChatColor.BOLD}PSYCHICS"
-
-fun PsychicConcept.updateTooltipBook(book: ItemStack, stats: (EsperStatistic) -> Double): ItemStack {
-    val components = ArrayList<BaseComponent>()
-    val psychicDisplayName = displayName
-
-    components += TextComponent().apply {
-        isBold = true
-        isUnderlined = true
-        text = displayName
-        hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(renderTooltip().toString()))
-        clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/psychics supply")
-    }
-
-    for (ability in abilityConcepts) {
-        components += TextComponent().apply {
-            color = ChatColor.RESET
-            isBold = true
-            text = "\n\n  - "
-        }
-        components += TextComponent().apply {
-            text = ability.displayName
-            isBold = true
-            isUnderlined = true
-            hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(ability.renderTooltip(stats).toString()))
-            clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/psychics supply ${ability.name}")
-        }
-    }
-
-    book.itemMeta = (book.itemMeta as BookMeta).apply {
-        lore = null
-        title = "${ChatColor.BOLD}$psychicDisplayName"
-        author = PSYCHIC_AUTHOR
-        generation = BookMeta.Generation.ORIGINAL
-        spigot().setPages(components.toTypedArray())
-        isPsychicbound = true
-    }
-
-    return book
-}
-
-fun PsychicConcept.createTooltipBook(stats: (EsperStatistic) -> Double): ItemStack {
-    return updateTooltipBook(ItemStack(Material.WRITTEN_BOOK), stats)
-}
-
-internal val ItemStack.isPsychicWrittenBook: Boolean
-    get() {
-        val meta = itemMeta
-
-        if (meta is BookMeta) {
-            return meta.author == PSYCHIC_AUTHOR
-        }
-
-        return false
-    }

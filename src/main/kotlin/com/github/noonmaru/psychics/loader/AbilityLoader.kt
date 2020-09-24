@@ -76,6 +76,14 @@ class AbilityLoader internal constructor() {
 
         throw ClassNotFoundException(name)
     }
+
+    fun unloadAll() {
+        classes.clear()
+        classLoaders.run {
+            values.forEach(AbilityClassLoader::close)
+            clear()
+        }
+    }
 }
 
 private fun <T> testCreateInstance(clazz: Class<T>): T {

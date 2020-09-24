@@ -21,11 +21,13 @@ import com.github.noonmaru.psychics.attribute.EsperStatistic
 import com.github.noonmaru.psychics.damage.Damage
 import com.github.noonmaru.psychics.format.decimalFormat
 import net.md_5.bungee.api.ChatColor
+import org.bukkit.inventory.ItemStack
 
 class TooltipBuilder {
     var title: String? = null
     private val stats = ArrayList<Triple<ChatColor, String, String>>()
     private val description = ArrayList<String>()
+    private val footers = ArrayList<Pair<ChatColor, String>>()
     private val templates = HashMap<String, String>()
 
     fun addStats(color: ChatColor, name: String, value: String?) {
@@ -53,6 +55,10 @@ class TooltipBuilder {
         description.addAll(c)
     }
 
+    fun addFooter(footer: Pair<ChatColor, String>) {
+        this.footers += footer
+    }
+
     fun addTemplates(vararg templates: Pair<String, Any>) {
         for (template in templates) {
             val name = template.first
@@ -68,26 +74,40 @@ class TooltipBuilder {
         }
     }
 
-    fun toLore(): List<String> {
+    fun toLore(includeTitle: Boolean = true): List<String> {
         val stats = stats
         val description = description
+        val footers = footers
         val lore = ArrayList<String>()
 
-        title?.let { lore += "$it${ChatColor.RESET}" }
+        if (includeTitle) title?.let { lore += "$it${ChatColor.WHITE}" }
 
         if (stats.isNotEmpty()) {
             for ((color, name, value) in stats) {
-                lore += "${color}${ChatColor.BOLD}$name${ChatColor.RESET}  $value${ChatColor.RESET}"
+                lore += "${color}${ChatColor.BOLD}$name${ChatColor.WHITE}  $value${ChatColor.WHITE}"
             }
         }
 
         if (description.isNotEmpty()) {
-            lore += "${ChatColor.RESET}"
+            lore += ""
+            lore.addAll(description.map { "${ChatColor.GRAY}$it" })
+        }
 
-            lore.addAll(description)
+        if (footers.isNotEmpty()) {
+            lore += ""
+            lore.addAll(footers.map { (color, text) -> "$color$text" })
         }
 
         return lore.map { it.renderTemplates(templates::get) }
+    }
+
+    fun toItemStack(origin: ItemStack): ItemStack {
+        return origin.clone().apply {
+            itemMeta = itemMeta.apply {
+                setDisplayName(title.toString())
+                lore = toLore(false)
+            }
+        }
     }
 
     override fun toString(): String {

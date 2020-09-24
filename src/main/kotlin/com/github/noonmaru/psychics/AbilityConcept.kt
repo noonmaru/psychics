@@ -138,9 +138,11 @@ open class AbilityConcept {
     var healing: EsperStatistic? = null
         protected set
 
-
     @Config("wand", required = false)
-    internal var _wand: ItemStack? = null
+    private var _wand: ItemStack? = null
+
+    internal val internalWand
+        get() = _wand
 
     /**
      * 능력과 상호작용하는 [ItemStack]
@@ -149,6 +151,18 @@ open class AbilityConcept {
         get() = _wand?.clone()
         protected set(value) {
             _wand = value?.clone()
+        }
+
+    @Config("supply-items")
+    private var _supplyItems: List<ItemStack> = ImmutableList.of()
+
+    /**
+     * 기본 공급 아이템
+     */
+    var supplyItems: List<ItemStack>
+        get() = _supplyItems.map { it.clone() }
+        protected set(value) {
+            _supplyItems = ImmutableList.copyOf(value.map { it.clone() })
         }
 
     /**
@@ -180,6 +194,7 @@ open class AbilityConcept {
         val ret = computeConfig(config, true)
 
         this.description = ImmutableList.copyOf(description.renderTemplatesAll(config))
+        this._supplyItems = ImmutableList.copyOf(_supplyItems)
 
         return ret
     }
@@ -196,6 +211,11 @@ open class AbilityConcept {
             addStats(ChatColor.WHITE, "치유량", "<healing>", healing)
             addStats("damage", damage)
             addDescription(description)
+
+            if (_supplyItems.isNotEmpty()) {
+                addFooter(ChatColor.DARK_GREEN to "클릭하여 능력 아이템을 지급받으세요.")
+            }
+
             addTemplates(
                 "display-name" to displayName,
                 "level-requirement" to levelRequirement,
@@ -220,14 +240,6 @@ open class AbilityConcept {
         }
     }
 
-    internal fun supplyItems(): List<ItemStack> {
-        return runCatching {
-            onSupplyItems()
-        }.onFailure { exception ->
-            exception.printStackTrace()
-        }.getOrElse { emptyList() }
-    }
-
     /**
      * 필드 변수 적용 후 호출
      */
@@ -237,9 +249,4 @@ open class AbilityConcept {
      * 툴팁 요청 시 호출
      */
     open fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {}
-
-    /**
-     * 지급 아이템 요청 시 호출
-     */
-    open fun onSupplyItems() = emptyList<ItemStack>()
 }

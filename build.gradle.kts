@@ -34,10 +34,12 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8")) //kotlin
     compileOnly(kotlin("reflect"))
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    compileOnly("com.github.noonmaru:inv-fx:1.1.1")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
+    compileOnly("com.github.noonmaru:inv-fx:1.2.0")
+
     implementation("com.github.noonmaru:tap:3.1.2")
-    implementation("com.github.noonmaru:kommand:0.3.2")
+    implementation("com.github.noonmaru:kommand:0.4.0")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
@@ -73,13 +75,11 @@ tasks {
     }
     // build for distributes
     shadowJar {
-        archiveClassifier.set("dist")
+        archiveBaseName.set(project.property("pluginName").toString())
+        archiveVersion.set("") // For bukkit plugin update
+        archiveClassifier.set("") // Remove 'all'
         relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
         relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
-    }
-    create<Copy>("copyJarToServer") {
-        from(shadowJar)
-        into("W:\\Servers\\psychics\\plugins")
     }
 }
 

@@ -18,7 +18,7 @@
 package com.github.noonmaru.psychics
 
 import com.github.noonmaru.psychics.damage.Damage
-import com.github.noonmaru.psychics.damage.abilityDamage
+import com.github.noonmaru.psychics.damage.psychicDamage
 import com.github.noonmaru.psychics.util.TargetFilter
 import com.github.noonmaru.psychics.util.Tick
 import com.github.noonmaru.tap.ref.UpstreamReference
@@ -43,7 +43,7 @@ abstract class Ability<T : AbilityConcept> {
             val ticks = max(0L, value)
             field = Tick.currentTicks + ticks
 
-            val wand = concept._wand
+            val wand = concept.internalWand
 
             if (wand != null) {
                 esper.player.setCooldown(wand.type, ticks.toInt())
@@ -200,7 +200,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
         val type = damage.type
         val amount = esper.getStatistic(damage.stats)
 
-        abilityDamage(type, amount, esper.player, knockBack, knockBackLocation)
+        psychicDamage(type, amount, esper.player, knockBack, knockBackLocation)
     }
 }
 

@@ -248,7 +248,7 @@ class Psychic internal constructor(
 
     fun getAbilityByWand(item: ItemStack): Ability<*>? {
         for (ability in abilities) {
-            val wand = ability.concept._wand
+            val wand = ability.concept.internalWand
 
             if (wand != null && wand.isSimilar(item))
                 return ability

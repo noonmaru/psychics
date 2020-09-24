@@ -17,27 +17,39 @@
 
 package com.github.noonmaru.psychics.command
 
+import com.github.noonmaru.invfx.openWindow
 import com.github.noonmaru.kommand.KommandBuilder
 import com.github.noonmaru.kommand.KommandContext
 import com.github.noonmaru.kommand.argument.KommandArgument
 import com.github.noonmaru.kommand.argument.player
 import com.github.noonmaru.kommand.argument.suggestions
 import com.github.noonmaru.kommand.sendFeedback
-import com.github.noonmaru.psychics.*
-import org.bukkit.Material
+import com.github.noonmaru.psychics.AbilityConcept
+import com.github.noonmaru.psychics.PsychicConcept
+import com.github.noonmaru.psychics.PsychicManager
+import com.github.noonmaru.psychics.esper
+import com.github.noonmaru.psychics.invfx.InvPsychic
+import com.github.noonmaru.psychics.item.addItemNonDuplicate
+import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
 internal object CommandPsychic {
-    internal lateinit var manager: PsychicManager
+    private lateinit var plugin: PsychicPlugin
+    lateinit var manager: PsychicManager
 
-    internal fun initModule(manager: PsychicManager) {
+    internal fun initModule(plugin: PsychicPlugin, manager: PsychicManager) {
+        this.plugin = plugin
         this.manager = manager
     }
 
     fun register(builder: KommandBuilder) {
         builder.apply {
+            then("update") {
+                executes {
+                    plugin.update(it.sender)
+                }
+            }
             then("attach") {
                 then("player" to player()) {
                     then("psychic" to PsychicConceptArgument) {
@@ -76,17 +88,7 @@ internal object CommandPsychic {
     }
 
     private fun info(sender: Player, psychicConcept: PsychicConcept) {
-        val inv = sender.inventory
-
-        for (itemStack in inv) {
-            if (itemStack != null && itemStack.type == Material.WRITTEN_BOOK && itemStack.isPsychicWrittenBook) {
-                psychicConcept.updateTooltipBook(itemStack, requireNotNull(manager.getEsper(sender))::getStatistic)
-                return
-            }
-        }
-
-        val tooltip = psychicConcept.createTooltipBook { requireNotNull(manager.getEsper(sender)).getStatistic(it) }
-        inv.addItem(tooltip)
+        sender.openWindow(InvPsychic.create(psychicConcept, sender.esper::getStatistic))
     }
 
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
@@ -104,27 +106,8 @@ internal object CommandPsychic {
     }
 
     private fun supply(sender: Player, abilityConcept: AbilityConcept) {
-        val inv = sender.inventory
-        val items = abilityConcept.supplyItems()
-
-        out@ for (item in items) {
-            for (invItem in inv) {
-                if (invItem == null)
-                    continue
-                if (invItem.isSimilarLore(item))
-                    continue@out
-            }
-
-            inv.addItem(item)
-        }
+        sender.inventory.addItemNonDuplicate(abilityConcept.supplyItems)
     }
-}
-
-private fun ItemStack.isSimilarLore(other: ItemStack): Boolean {
-    val meta = itemMeta
-    val otherMeta = other.itemMeta
-
-    return type == other.type && data == other.data && meta.displayName == itemMeta.displayName && meta.lore == otherMeta.lore
 }
 
 object PsychicConceptArgument : KommandArgument<PsychicConcept> {
