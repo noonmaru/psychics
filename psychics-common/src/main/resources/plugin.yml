@@ -1,0 +1,10 @@
+name: $pluginName
+main: $pluginMain
+depend: [ Kotlin, InvFX, ProtocolLib ]
+api-version: '1.16'
+version: $version
+commands:
+  psychics:
+    aliases: [ 'psy' ]
+    usage: /<command> help
+    permission: 'psychics.commands'

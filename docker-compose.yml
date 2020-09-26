@@ -3,7 +3,7 @@ version: '3.7'
 services:
   paper:
     build: .
-    container_name: psychic_abilities
+    container_name: psychics
     stdin_open: true
     tty: true
     ports:
@@ -15,4 +15,5 @@ services:
       - /docker-setup-plugin
       - https://github.com/noonmaru/kotlin-plugin/releases/download/1.4.10/Kotlin.jar
       - https://github.com/noonmaru/auto-reloader/releases/download/1.0.0/AutoReloader.jar
+      - https://github.com/noonmaru/inv-fx/releases/download/1.3.0/InvFX.jar
       - https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar
