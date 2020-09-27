@@ -89,11 +89,10 @@ class PsychicManager(
     }
 
     internal fun updateAbilities() {
-        val updateFolder = File(abilitiesFolder, "update")
         val abilityFiles = getAbilityFiles()
-
         if (abilityFiles.isEmpty()) return
 
+        val updateFolder = File(abilitiesFolder, "update")
         val updated = arrayListOf<File>()
 
         for (abilityFile in abilityFiles) {
@@ -104,6 +103,7 @@ class PsychicManager(
                     copyTo(abilityFile, true)
                 }.onSuccess {
                     updated += it
+                    updateFile.runCatching { delete() }
                 }.onFailure {
                     logger.warning("Failed to update ability ${updateFile.nameWithoutExtension}")
                 }

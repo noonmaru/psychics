@@ -95,5 +95,8 @@ class PsychicPlugin : JavaPlugin() {
         if (this::psychicManager.isInitialized) {
             psychicManager.unload()
         }
+        if (this::fakeEntityServer.isInitialized) {
+            fakeEntityServer.clear()
+        }
     }
 }

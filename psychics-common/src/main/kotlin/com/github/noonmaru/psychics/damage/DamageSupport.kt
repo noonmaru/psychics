@@ -155,8 +155,8 @@ fun LivingEntity.psychicDamage(
     type: DamageType,
     damage: Double,
     source: Player,
-    knockback: Double = 0.0,
-    knockbackSource: Location? = source.location
+    knockbackSource: Location? = source.location,
+    knockback: Double = 0.0
 ) {
     val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
     val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0

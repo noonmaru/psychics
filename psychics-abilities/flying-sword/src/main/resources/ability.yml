@@ -1,0 +1,5 @@
+group: $group
+name: $name
+version: $version
+main: $abilityMain
+authors: [ "noonmaru" ]

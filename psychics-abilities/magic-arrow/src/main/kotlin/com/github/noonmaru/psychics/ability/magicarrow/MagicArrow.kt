@@ -180,7 +180,7 @@ class MagicArrow : Ability<MagicArrowConcept>(), Listener {
                             damageAmount += damageAmount * (1 + power) / 4.0
                         }
 
-                        target.psychicDamage(damage.type, damageAmount, esper.player, 1.0 + knockback.toDouble(), from)
+                        target.psychicDamage(damage.type, damageAmount, esper.player, from, 1.0 + knockback.toDouble())
                     }
                 }
 

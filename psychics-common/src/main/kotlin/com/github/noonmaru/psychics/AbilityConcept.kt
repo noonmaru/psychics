@@ -172,7 +172,7 @@ open class AbilityConcept {
      * * <variable> 능력 내부 템플릿 값 활용하기
      */
     @Config
-    var description: List<String> = ImmutableList.of()
+    var description: List<String> = ArrayList(0)
         protected set
 
     internal fun initialize(

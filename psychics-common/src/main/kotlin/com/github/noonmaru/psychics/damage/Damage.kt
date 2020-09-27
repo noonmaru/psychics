@@ -18,6 +18,7 @@
 package com.github.noonmaru.psychics.damage
 
 import com.github.noonmaru.psychics.attribute.EsperStatistic
+import net.md_5.bungee.api.ChatColor
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 
 class Damage(
@@ -25,7 +26,7 @@ class Damage(
     val stats: EsperStatistic
 ) : ConfigurationSerializable {
     override fun toString(): String {
-        return "$stats${type.i18Name}"
+        return "$stats${ChatColor.BOLD}${type.i18Name}"
     }
 
     override fun serialize(): Map<String, Any> {

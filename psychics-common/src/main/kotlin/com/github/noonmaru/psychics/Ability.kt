@@ -140,6 +140,17 @@ abstract class Ability<T : AbilityConcept> {
     fun checkEnabled() {
         psychic.checkEnabled()
     }
+
+    fun LivingEntity.psychicDamage(
+        damage: Damage,
+        knockbackLocation: Location? = esper.player.location,
+        knockback: Double = 0.0
+    ) {
+        val type = damage.type
+        val amount = esper.getStatistic(damage.stats)
+
+        psychicDamage(type, amount, esper.player, knockbackLocation, knockback)
+    }
 }
 
 abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
@@ -191,17 +202,6 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     open fun onChannel(remainingTicks: Long, target: Any?) {}
 
     open fun onInterrupt(target: Any?) {}
-
-    fun LivingEntity.psychicDamage(
-        damage: Damage,
-        knockBackLocation: Location? = esper.player.location,
-        knockBack: Double = 0.0
-    ) {
-        val type = damage.type
-        val amount = esper.getStatistic(damage.stats)
-
-        psychicDamage(type, amount, esper.player, knockBack, knockBackLocation)
-    }
 }
 
 fun Ability<*>.targetFilter(): TargetFilter {

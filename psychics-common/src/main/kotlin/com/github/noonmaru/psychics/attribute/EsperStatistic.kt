@@ -71,12 +71,46 @@ class EsperStatistic internal constructor(pairs: List<Pair<EsperAttribute, Doubl
             return EsperStatistic(list)
         }
 
-        fun of(vararg pairs: Pair<EsperAttribute, Double>): EsperStatistic {
-            return EsperStatistic(pairs.asList())
+        fun of(stat: Pair<EsperAttribute, Double>): EsperStatistic {
+            return construct(stat)
         }
 
-        fun of(pairs: List<Pair<EsperAttribute, Double>>): EsperStatistic {
-            return EsperStatistic(pairs)
+        fun of(
+            s1: Pair<EsperAttribute, Double>,
+            s2: Pair<EsperAttribute, Double>
+        ): EsperStatistic {
+            return construct(s1, s2)
+        }
+
+        fun of(
+            s1: Pair<EsperAttribute, Double>,
+            s2: Pair<EsperAttribute, Double>,
+            s3: Pair<EsperAttribute, Double>
+        ): EsperStatistic {
+            return construct(s1, s2, s3)
+        }
+
+        fun of(
+            s1: Pair<EsperAttribute, Double>,
+            s2: Pair<EsperAttribute, Double>,
+            s3: Pair<EsperAttribute, Double>,
+            s4: Pair<EsperAttribute, Double>
+        ): EsperStatistic {
+            return construct(s1, s2, s3, s4)
+        }
+
+        fun of(
+            s1: Pair<EsperAttribute, Double>,
+            s2: Pair<EsperAttribute, Double>,
+            s3: Pair<EsperAttribute, Double>,
+            s4: Pair<EsperAttribute, Double>,
+            s5: Pair<EsperAttribute, Double>
+        ): EsperStatistic {
+            return construct(s1, s2, s3, s4, s5)
+        }
+
+        private fun construct(vararg stats: Pair<EsperAttribute, Double>): EsperStatistic {
+            return EsperStatistic(stats.asList())
         }
     }
 

@@ -34,7 +34,6 @@ class PsychicConcept internal constructor() {
         internal const val HEALTH_REGEN = "health-regen"
         internal const val MANA = "mana"
         internal const val MANA_REGEN = "mana-regen"
-        internal const val DESCRIPTION = "description"
     }
 
     lateinit var manager: PsychicManager
@@ -92,7 +91,7 @@ class PsychicConcept internal constructor() {
      * 설명
      */
     @Config
-    var description: List<String> = ImmutableList.of()
+    var description: List<String> = ArrayList(0)
         private set
 
     /**
