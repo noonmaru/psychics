@@ -55,7 +55,7 @@ class StraightShurikenConcept : AbilityConcept() {
         interruptible = true
         cost = 30.0
         wand = ItemStack(Material.HEART_OF_THE_SEA)
-        damage = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.34))
+        damage = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 7.5))
         description = listOf(
             "바다의 심장을 우클릭 시 나선수리검을 발사합니다.",
             "발사된 나선수리검은 최대 \${common.range} 블록을 날아가며",

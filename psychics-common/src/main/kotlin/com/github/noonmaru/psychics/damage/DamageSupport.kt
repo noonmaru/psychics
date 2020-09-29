@@ -87,8 +87,8 @@ object DamageSupport {
     }
 
     // 0레벨일때 최소 공격력 20
-    const val minAttackDamage = 20.0
-    val maxAttackDamage = inversePsychicDamage(20.0, 20.0, 12.0, 20.0)
+    const val minAttackDamage = 1.0
+    val maxAttackDamage = inversePsychicDamage(1.0, 20.0, 12.0, 20.0)
     val gapAttackDamage = maxAttackDamage - minAttackDamage
 
     // 공격력 최대 증가레벨

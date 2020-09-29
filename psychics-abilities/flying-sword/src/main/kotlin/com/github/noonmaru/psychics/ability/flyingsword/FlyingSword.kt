@@ -1,9 +1,6 @@
 package com.github.noonmaru.psychics.ability.flyingsword
 
-import com.github.noonmaru.psychics.Ability
-import com.github.noonmaru.psychics.AbilityConcept
-import com.github.noonmaru.psychics.PsychicProjectile
-import com.github.noonmaru.psychics.TestResult
+import com.github.noonmaru.psychics.*
 import com.github.noonmaru.psychics.attribute.EsperAttribute
 import com.github.noonmaru.psychics.attribute.EsperStatistic
 import com.github.noonmaru.psychics.damage.Damage
@@ -59,27 +56,29 @@ class FlyingSwordConcept : AbilityConcept() {
     var raySize = 0.5
 
     @Config
-    var wooden = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.01))
+    var wooden = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0))
 
     @Config
-    var stone = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.03))
+    var stone = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.5))
 
     @Config
-    var iron = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.05))
+    var iron = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.0))
 
     @Config
-    var golden = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.07))
+    var golden = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.5))
 
     @Config
-    var diamond = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.09))
+    var diamond = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 3.0))
 
     @Config
-    var netherite = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.1))
+    var netherite = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 3.5))
 
     @Config
     var bonusDamageBySharpness = 0.1
 
     init {
+        displayName = "비도"
+        type = AbilityType.ACTIVE
         range = 32.0
         cooldownTicks = 20
         cost = 20.0
@@ -122,7 +121,7 @@ class FlyingSwordConcept : AbilityConcept() {
             Material.STONE_SWORD -> stone
             Material.IRON_SWORD -> iron
             Material.GOLDEN_SWORD -> golden
-            Material.DIAMOND -> diamond
+            Material.DIAMOND_SWORD -> diamond
             Material.NETHERITE_SWORD -> netherite
             else -> null
         }
@@ -184,9 +183,9 @@ class FlyingSword : Ability<FlyingSwordConcept>(), Listener {
 
         event.item?.let { item ->
             val type = item.type
+
             concept.getDamageByType(type)?.let { damage ->
                 if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-
                     if (test() == TestResult.SUCCESS && swords.count() < concept.maxSummonCount) {
                         swords.add(Sword(item.clone(), damage, getSwordLocation()))
                         cooldownTicks = concept.cooldownTicks

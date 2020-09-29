@@ -46,7 +46,7 @@ class MagicArrowConcept : AbilityConcept() {
         levelRequirement = 10
         range = 32.0
         cost = 40.0
-        damage = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0 / 8.0))
+        damage = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 3.0))
         supplyItems = listOf(
             ItemStack(Material.BOW).apply {
                 val meta = itemMeta

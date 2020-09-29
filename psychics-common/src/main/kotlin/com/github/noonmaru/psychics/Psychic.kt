@@ -159,7 +159,7 @@ class Psychic internal constructor(
             ability.runCatching {
                 cooldownTicks = 0
                 onDetach()
-            }
+            }.onFailure(Throwable::printStackTrace)
         }
         esperRef.clear()
     }
@@ -169,7 +169,7 @@ class Psychic internal constructor(
         prevUpdateTicks = Tick.currentTicks
 
         for (ability in abilities) {
-            ability.runCatching { onEnable() }
+            ability.runCatching { onEnable() }.onFailure(Throwable::printStackTrace)
         }
     }
 
@@ -191,7 +191,7 @@ class Psychic internal constructor(
         }
 
         for (ability in abilities) {
-            ability.runCatching { onDisable() }
+            ability.runCatching { onDisable() }.onFailure(Throwable::printStackTrace)
         }
     }
 
@@ -296,7 +296,7 @@ class Psychic internal constructor(
         return fakeEntity
     }
 
-    fun spawnFallingBlock(location: Location, blockData: BlockData): FakeEntity {
+    fun spawnFakeFallingBlock(location: Location, blockData: BlockData): FakeEntity {
         checkState()
         checkEnabled()
 
@@ -307,7 +307,7 @@ class Psychic internal constructor(
     }
 
     fun consumeMana(amount: Double): Boolean {
-        if (mana > amount) {
+        if (mana >= amount) {
             mana -= amount
 
             return true
@@ -404,14 +404,14 @@ class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: 
         get() = max(0, channelTick - Tick.currentTicks)
 
     internal fun channel() {
-        ability.runCatching { onChannel(remainingTicks, target) }
+        ability.runCatching { onChannel(remainingTicks, target) }.onFailure(Throwable::printStackTrace)
     }
 
     internal fun cast() {
-        ability.runCatching { onCast(target) }
+        ability.runCatching { onCast(target) }.onFailure(Throwable::printStackTrace)
     }
 
     internal fun interrupt() {
-        ability.runCatching { onInterrupt(target) }
+        ability.runCatching { onInterrupt(target) }.onFailure(Throwable::printStackTrace)
     }
 }
