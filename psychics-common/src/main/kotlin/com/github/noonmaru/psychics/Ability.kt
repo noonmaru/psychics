@@ -149,7 +149,7 @@ abstract class Ability<T : AbilityConcept> {
         val type = damage.type
         val amount = esper.getStatistic(damage.stats)
 
-        psychicDamage(type, amount, esper.player, knockbackLocation, knockback)
+        psychicDamage(this@Ability, type, amount, esper.player, knockbackLocation, knockback)
     }
 }
 

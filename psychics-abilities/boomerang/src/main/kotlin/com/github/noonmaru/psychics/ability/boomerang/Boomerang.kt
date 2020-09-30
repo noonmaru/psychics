@@ -21,6 +21,7 @@ import com.github.noonmaru.tap.math.toRadians
 import com.google.common.collect.ImmutableList
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Item
@@ -45,16 +46,16 @@ class AbilityBoomerangConcept : AbilityConcept() {
     )
 
     @Config
-    var projectileLaunchSpeed = 5.0
+    var projectileLaunchSpeed = 7.0
 
     @Config
     var projectileTicks: Int = 200
 
     @Config
-    var projectileReturningTicks = 12
+    var projectileReturningTicks = 8
 
     @Config
-    var projectileReturningSpeed = 0.2
+    var projectileReturningSpeed = 0.4
 
     @Config
     val knockback: Double = 0.75
@@ -64,7 +65,7 @@ class AbilityBoomerangConcept : AbilityConcept() {
 
     init {
         displayName = "부메랑"
-        castingTicks = 5
+        cooldownTicks = 2
         wand = ItemStack(Material.GOLD_INGOT)
         damage = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.0))
 
@@ -143,6 +144,7 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
 
         psychic.launchProjectile(eyeLocation, projectile)
         projectile.velocity = eyeLocation.direction.multiply(concept.projectileLaunchSpeed)
+        eyeLocation.world.playSound(eyeLocation, Sound.ENTITY_ARROW_SHOOT, 0.5F, 1.5F)
     }
 
     inner class Boomerang(location: Location, itemStack: ItemStack) {
@@ -220,7 +222,7 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
             if (ticks >= concept.projectileReturningTicks) {
                 val targetLocation = getReturnLocation()
 
-                if (targetLocation.world != to.world || targetLocation.distance(to) < 0.1) {
+                if (targetLocation.world != to.world || targetLocation.distance(to) < 0.5) {
                     remove()
                 }
             }
@@ -262,6 +264,9 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
         override fun onRemove() {
             boomerang.vehicle = null
             hitEntities.clear() // help gc
+
+            val location = location
+            location.world.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 1.5F)
         }
     }
 }

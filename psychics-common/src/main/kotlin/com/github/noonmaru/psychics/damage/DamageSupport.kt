@@ -17,10 +17,14 @@
 
 package com.github.noonmaru.psychics.damage
 
+import com.github.noonmaru.psychics.Ability
+import com.github.noonmaru.psychics.AbilityConcept
+import com.github.noonmaru.psychics.event.EntityDamageByPsychicEvent
 import org.bukkit.Location
 import org.bukkit.attribute.Attribute
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.LivingEntity
+import org.bukkit.entity.Mob
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
@@ -150,25 +154,44 @@ fun LivingEntity.getProtection(enchantment: Enchantment): Int {
  * 개체에게 능력 피해를 입힙니다.
  *
  * 마인크래프트 피해 계산식이 아닌 [DamageSupport.calculatePsychicDamage]로 계산된 피해를 입힙니다.
+ *
+ * @return 실제 데미지 값 (이벤트 취소시 -1.0)
  */
 fun LivingEntity.psychicDamage(
+    ability: Ability<out AbilityConcept>,
+    damageType: DamageType,
+    damage: Double,
+    damager: Player,
+    knockbackSource: Location? = damager.location,
+    knockbackForce: Double = 0.0
+): Double {
+    val event = EntityDamageByPsychicEvent(damager, this, damage, ability, damageType, knockbackSource, knockbackForce)
+
+    if (event.callEvent()) {
+        return psychicDamageActual(damageType, event.damage, damager, event.knockbackSource, event.knockbackForce)
+    }
+
+    return -1.0
+}
+
+private fun LivingEntity.psychicDamageActual(
     type: DamageType,
     damage: Double,
-    source: Player,
-    knockbackSource: Location? = source.location,
-    knockback: Double = 0.0
-) {
+    damager: Player,
+    knockbackSource: Location? = damager.location,
+    knockbackForce: Double = 0.0
+): Double {
     val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
     val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
     val protection = getProtection(type.protection)
     val actualDamage = DamageSupport.calculatePsychicDamage(damage, armor, armorTough, protection.toDouble())
 
-    killer = source
+    killer = damager
 
     // knockBack
-    if (knockbackSource != null && knockback > 0.0) {
+    if (knockbackSource != null && knockbackForce > 0.0) {
         val targetLocation = location
-        var force = knockback * 0.5
+        var force = knockbackForce * 0.5
         val deltaX = knockbackSource.x - targetLocation.x
         val deltaZ = knockbackSource.z - targetLocation.z
 
@@ -190,5 +213,10 @@ fun LivingEntity.psychicDamage(
         }
     }
 
+    if (this is Mob && target == null)
+        target = damager
+
     damage(actualDamage)
+
+    return actualDamage
 }

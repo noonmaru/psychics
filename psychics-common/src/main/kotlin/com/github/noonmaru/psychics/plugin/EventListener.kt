@@ -27,6 +27,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.event.entity.ItemSpawnEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
@@ -108,6 +109,15 @@ class EventListener(
             } else {
                 event.isCancelled = true
             }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onEntityRegainHealth(event: EntityRegainHealthEvent) {
+        val entity = event.entity
+
+        if (entity is Player && entity.killer != null) {
+            event.isCancelled = true
         }
     }
 

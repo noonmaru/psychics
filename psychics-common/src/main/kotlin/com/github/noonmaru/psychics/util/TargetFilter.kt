@@ -18,6 +18,7 @@
 package com.github.noonmaru.psychics.util
 
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -34,6 +35,12 @@ class TargetFilter(
         if (t === player) return false
 
         if (t is LivingEntity) {
+            if (t is Player) {
+                val gameMode = t.gameMode
+
+                if (gameMode == GameMode.SPECTATOR || gameMode == GameMode.CREATIVE) return false
+            }
+
             val team = team ?: return hostile
             val name = if (t is Player) t.name else t.uniqueId.toString()
             val result = team.hasEntry(name)

@@ -53,7 +53,7 @@ class FlyingSwordConcept : AbilityConcept() {
     var maxSummonCount = 5
 
     @Config
-    var raySize = 0.5
+    var raySize = 1.0
 
     @Config
     var wooden = Damage(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0))
@@ -80,8 +80,8 @@ class FlyingSwordConcept : AbilityConcept() {
         displayName = "비도"
         type = AbilityType.ACTIVE
         range = 32.0
-        cooldownTicks = 20
-        cost = 20.0
+        cooldownTicks = 10
+        cost = 10.0
 
         description = listOf(
             "검을 우클릭하여 비검을 소환합니다.",
@@ -320,6 +320,7 @@ class FlyingSword : Ability<FlyingSwordConcept>(), Listener {
                             damageAmount *= 1.0 + sharpness * concept.bonusDamageBySharpness
 
                             target.psychicDamage(
+                                this@FlyingSword,
                                 damage.type,
                                 damageAmount,
                                 esper.player,
