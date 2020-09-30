@@ -71,7 +71,7 @@ abstract class Ability<T : AbilityConcept> {
         val psychic = psychic
 
         if (esper.player.level < concept.levelRequirement) return TestResult.FAILED_LEVEL
-        if (!psychic.enabled) return TestResult.FAILED_DISABLED
+        if (!psychic.isEnabled) return TestResult.FAILED_DISABLED
         if (cooldownTicks > 0L) return TestResult.FAILED_COOLDOWN
         if (psychic.mana < concept.cost) return TestResult.FAILED_COST
 

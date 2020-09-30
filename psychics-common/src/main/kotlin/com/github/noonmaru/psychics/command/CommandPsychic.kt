@@ -93,7 +93,7 @@ internal object CommandPsychic {
     }
 
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
-        requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).enabled = true
+        requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).isEnabled = true
         sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
     }
 

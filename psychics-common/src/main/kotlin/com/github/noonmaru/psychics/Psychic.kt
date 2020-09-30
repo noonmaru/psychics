@@ -50,6 +50,11 @@ class Psychic internal constructor(
     lateinit var manager: PsychicManager
         private set
 
+    /**
+     * 마나량입니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     */
     var mana = 0.0
         set(value) {
             checkState()
@@ -61,15 +66,31 @@ class Psychic internal constructor(
             }
         }
 
+    /**
+     * 능력이 활성화된 tick입니다.
+     */
     var ticks = 0L
         private set
 
+    /**
+     * 능력 목록입니다.
+     */
     val abilities: List<Ability<*>>
 
+    /**
+     * 현재 시전중인 채널입니다.
+     *
+     * @see Channel
+     */
     var channeling: Channel? = null
         private set
 
-    var enabled = false
+    /**
+     * 능력 활성화 여부입니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     */
+    var isEnabled = false
         set(value) {
             checkState()
 
@@ -84,11 +105,17 @@ class Psychic internal constructor(
             }
         }
 
+    /**
+     * 능력 유효상태입니다.
+     */
     var valid = true
         private set
 
     private lateinit var esperRef: UpstreamReference<Esper>
 
+    /**
+     * 능력이 부여된 [Esper]입니다.
+     */
     val esper: Esper
         get() = esperRef.get()
 
@@ -165,7 +192,7 @@ class Psychic internal constructor(
     }
 
     private fun onEnable() {
-        enabled = true
+        isEnabled = true
         prevUpdateTicks = Tick.currentTicks
 
         for (ability in abilities) {
@@ -217,7 +244,7 @@ class Psychic internal constructor(
         config[NAME] = concept.name
         config[MANA] = mana
         config[TICKS] = ticks
-        config[ENABLED] = enabled
+        config[ENABLED] = isEnabled
 
         val abilitiesSection = config.createSection(ABILITIES)
 
@@ -243,9 +270,12 @@ class Psychic internal constructor(
             }
         }
 
-        enabled = config.getBoolean(ENABLED)
+        isEnabled = config.getBoolean(ENABLED)
     }
 
+    /**
+     * [AbilityConcept.wand] 속성이 같은 [Ability]를 반환합니다.
+     */
     fun getAbilityByWand(item: ItemStack): Ability<*>? {
         for (ability in abilities) {
             val wand = ability.concept.internalWand
@@ -257,6 +287,14 @@ class Psychic internal constructor(
         return null
     }
 
+    /**
+     * 태스크를 delay만큼 후에 실행합니다.
+     *
+     * 능력이 비활성화 될 때 취소됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun runTask(runnable: Runnable, delay: Long): TickTask {
         checkState()
         checkEnabled()
@@ -264,6 +302,14 @@ class Psychic internal constructor(
         return scheduler.runTask(runnable, delay)
     }
 
+    /**
+     * 태스크를 delay만큼 후 period마다 주기적으로 실행합니다.
+     *
+     * 능력이 비활성화 될 때 취소됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun runTaskTimer(runnable: Runnable, delay: Long, period: Long): TickTask {
         checkState()
         checkEnabled()
@@ -271,6 +317,16 @@ class Psychic internal constructor(
         return scheduler.runTaskTimer(runnable, delay, period)
     }
 
+    /**
+     * 이벤트를 등록합니다.
+     *
+     * 범위는 해당 [Psychic]이 부여된 [org.bukkit.entity.Player]객체로 국한됩니다.
+     *
+     * 능력이 비활성화 될 때 해제됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun registerEvents(listener: Listener) {
         checkState()
         checkEnabled()
@@ -278,6 +334,14 @@ class Psychic internal constructor(
         listeners.add(plugin.entityEventManager.registerEvents(esper.player, listener))
     }
 
+    /**
+     * 발사체를 발사합니다.
+     *
+     * 능력이 비활성화 될 때 제거됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun launchProjectile(location: Location, projectile: PsychicProjectile) {
         checkState()
         checkEnabled()
@@ -286,6 +350,14 @@ class Psychic internal constructor(
         projectileManager.launch(location, projectile)
     }
 
+    /**
+     * 가상 [Entity]를 생성합니다.
+     *
+     * 능력이 비활성화 될 때 제거됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun spawnFakeEntity(location: Location, entityClass: Class<out Entity>): FakeEntity {
         checkState()
         checkEnabled()
@@ -296,6 +368,14 @@ class Psychic internal constructor(
         return fakeEntity
     }
 
+    /**
+     * 가상 [org.bukkit.entity.FallingBlock]을 생성합니다.
+     *
+     * 능력이 비활성화 될 때 제거됩니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun spawnFakeFallingBlock(location: Location, blockData: BlockData): FakeEntity {
         checkState()
         checkEnabled()
@@ -306,6 +386,13 @@ class Psychic internal constructor(
         return fakeEntity
     }
 
+    /**
+     * 마나를 소모합니다.
+     *
+     * 전달한 양보다 적다면 소모되지 않습니다.
+     *
+     * @return 소모 성공 여부
+     */
     fun consumeMana(amount: Double): Boolean {
         if (mana >= amount) {
             mana -= amount
@@ -329,6 +416,9 @@ class Psychic internal constructor(
         }
     }
 
+    /**
+     * 현재 실행중인 [Channel]을 중지시킵니다.
+     */
     fun interruptChannel() {
         channeling?.let { channel ->
             channel.interrupt()
@@ -337,7 +427,7 @@ class Psychic internal constructor(
     }
 
     internal fun destroy() {
-        enabled = false
+        isEnabled = false
         detach()
         valid = false
     }
@@ -388,18 +478,34 @@ class Psychic internal constructor(
         }
     }
 
+    /**
+     * 능력 유효 여부를 체크합니다.
+     *
+     * @exception IllegalArgumentException 유효하지 않은 객체일때 발생
+     */
     fun checkState() {
         require(valid) { "Invalid Psychic@${System.identityHashCode(this).toString(16)}" }
     }
 
+    /**
+     * 능력 활성화 여부를 체크합니다.
+     *
+     * @exception IllegalArgumentException 활성화되지 않은 객체일때 발생
+     */
     fun checkEnabled() {
-        require(enabled) { "Disabled Psychic@${System.identityHashCode(this).toString(16)}" }
+        require(isEnabled) { "Disabled Psychic@${System.identityHashCode(this).toString(16)}" }
     }
 }
 
+/**
+ * 시전중인 스킬정보를 담고있는 클래스입니다.
+ */
 class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Long, val target: Any? = null) {
     private val channelTick = Tick.currentTicks + castingTicks
 
+    /**
+     * 시전까지 남은시간
+     */
     val remainingTicks
         get() = max(0, channelTick - Tick.currentTicks)
 

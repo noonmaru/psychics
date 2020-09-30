@@ -28,7 +28,7 @@ class SchedulerTask(
     override fun run() {
         for (esper in psychicManager.espers) {
             esper.psychic?.run {
-                if (enabled)
+                if (isEnabled)
                     update()
             }
         }
