@@ -3,6 +3,7 @@ main: $pluginMain
 depend: [ Kotlin, InvFX, ProtocolLib ]
 api-version: '1.16'
 version: $version
+author: $author
 commands:
   psychics:
     aliases: [ 'psy' ]

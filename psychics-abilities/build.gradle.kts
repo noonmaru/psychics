@@ -1,4 +1,6 @@
 subprojects {
+    if (version == "unspecified") version = parent!!.version
+
     dependencies {
         compileOnly(project(":psychics-common"))
     }
