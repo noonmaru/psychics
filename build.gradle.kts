@@ -92,4 +92,4 @@ project(":psychics-common") {
     apply(plugin = "maven-publish")
 }
 
-tasks.forEach { it.enabled = false }
+gradle.buildFinished { buildDir.deleteRecursively() }
