@@ -7,3 +7,7 @@
 ### 소개
 * [**PaperMC**](https://papermc.io/) 기반의 초능력 플러그인입니다.
 ---
+
+### 사용법 및 개발 문서
+* [**WIKI**](https://github.com/noonmaru/psychics/wiki)
+---
