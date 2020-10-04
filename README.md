@@ -13,4 +13,4 @@
 ---
 ### Compile
 * ./gradlew build
-  * plugin = "./psychics-common/build/libs/Psychics.jar"
+  *  = `./psychics-common/build/libs/Psychics.jar`
