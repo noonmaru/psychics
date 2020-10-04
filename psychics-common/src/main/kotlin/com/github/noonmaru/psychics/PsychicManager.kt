@@ -132,8 +132,8 @@ class PsychicManager(
 
         logger.info("Loaded abilities(${map.count()}):")
 
-        for (key in map.keys) {
-            logger.info("  - $key")
+        for ((id, container) in map) {
+            logger.info("  - $id v${container.description.version}")
         }
 
         abilityContainersById = ImmutableSortedMap.copyOf(map)
