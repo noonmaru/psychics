@@ -6,7 +6,7 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
-    create<Copy>("copyJarToDocker") {
+    create<Copy>("copyShadowJarToDocker") {
         from(shadowJar)
         var dest = File(rootDir, ".docker/plugins")
         if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")

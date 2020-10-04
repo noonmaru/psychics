@@ -60,6 +60,13 @@ internal object CommandPsychic {
                     }
                 }
             }
+            then("detach") {
+                then("player" to player()) {
+                    executes {
+                        detach(it.sender, it.parseArgument("player"))
+                    }
+                }
+            }
             then("info") {
                 then("psychic" to PsychicConceptArgument) {
                     require { this is Player }
@@ -95,6 +102,11 @@ internal object CommandPsychic {
     private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
         requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).isEnabled = true
         sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
+    }
+
+    private fun detach(sender: CommandSender, player: Player) {
+        player.esper.detachPsychic()
+        sender.sendFeedback("${player.name}'s ability = NONE")
     }
 
     private fun supply(sender: Player) {

@@ -7,15 +7,21 @@ subprojects {
         shadowJar {
             archiveBaseName.set("${project.group}.${project.name}")
         }
-        create<Copy>("copyJarToDocker") {
+        create<Copy>("copyShadowJarToParent") {
+            from(shadowJar)
+            into { File(parent!!.buildDir, "libs") }
+        }
+        create<Copy>("copyShadowJarToDocker") {
             from(shadowJar)
             var dest = File(rootDir, ".docker/plugins/Psychics/abilities")
             if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")
             into(dest)
             doLast { println("${shadowJar.get().archiveFileName.get()} copied to ${dest.path}") }
         }
+        assemble {
+            dependsOn(named("copyShadowJarToParent"))
+        }
     }
 }
 
-// Remove build dir after build
-gradle.buildFinished { buildDir.deleteRecursively() }
+tasks.filter { it.name != "clean" }.forEach { it.enabled = false }

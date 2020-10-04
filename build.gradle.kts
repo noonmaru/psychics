@@ -82,6 +82,9 @@ subprojects {
                 relocate("com.github.noonmaru.kommand", "com.github.noonmaru.psychics.kommand")
             }
         }
+        assemble {
+            dependsOn(shadowJar)
+        }
     }
 }
 
@@ -89,4 +92,4 @@ project(":psychics-common") {
     apply(plugin = "maven-publish")
 }
 
-gradle.buildFinished { project.buildDir.deleteRecursively() }
+tasks.forEach { it.enabled = false }

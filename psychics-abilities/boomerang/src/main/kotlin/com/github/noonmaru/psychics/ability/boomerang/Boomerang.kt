@@ -24,7 +24,6 @@ import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
-import org.bukkit.entity.Item
 import org.bukkit.entity.LivingEntity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
@@ -91,7 +90,7 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
     private fun getBackBoomerangLocation(): Location {
         return esper.player.location.apply {
             pitch = 0.0F
-            y += 0.9
+            y += 1.325
 
             subtract(direction)
         }
@@ -151,30 +150,22 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
         private val armorStand: FakeEntity =
             psychic.spawnFakeEntity(location.apply { y -= 1.62 }, ArmorStand::class.java).apply {
                 updateMetadata<ArmorStand> {
-                    headPose = EulerAngle(0.0, 0.0, 0.0)
+                    rightArmPose = EulerAngle(0.0, Math.PI / 2.0, Math.PI)
                     invisible = true
                     isMarker = true
                 }
+                updateEquipment {
+                    setItemInMainHand(itemStack)
+                }
             }
-
-        private val itemEntity: FakeEntity = psychic.spawnFakeEntity(location, Item::class.java).apply {
-            updateMetadata<Item> {
-                setItemStack(itemStack)
-            }
-        }
 
         internal var vehicle: BoomerangProjectile? = null
 
-        init {
-            armorStand.addPassenger(itemEntity)
-        }
-
         fun updateLocation(targetLocation: Location) {
-            armorStand.moveTo(targetLocation)
+            armorStand.moveTo(targetLocation.clone().apply { y -= 1.62 })
         }
 
         fun remove() {
-            itemEntity.remove()
             armorStand.remove()
         }
     }
