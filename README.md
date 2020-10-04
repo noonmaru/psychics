@@ -11,7 +11,6 @@
 ### 사용법 및 개발 문서
 * [**WIKI**](https://github.com/noonmaru/psychics/wiki)
 ---
-### 컴파일
+### Compile
 * ./gradlew build
   * plugin = "./psychics-common/build/libs/Psychics.jar"
-  * abilities = "./psychics-abilities/build/libs/"
