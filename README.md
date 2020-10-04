@@ -12,5 +12,5 @@
 * [**WIKI**](https://github.com/noonmaru/psychics/wiki)
 ---
 ### Compile
-* ./gradlew build
-  *  = `./psychics-common/build/libs/Psychics.jar`
+* **./gradlew build**
+  * Plugin = `./psychics-common/build/libs/Psychics.jar`
