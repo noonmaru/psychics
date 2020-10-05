@@ -70,8 +70,8 @@ abstract class Ability<T : AbilityConcept> {
     open fun test(): TestResult {
         val psychic = psychic
 
-        if (esper.player.level < concept.levelRequirement) return TestResult.FAILED_LEVEL
         if (!psychic.isEnabled) return TestResult.FAILED_DISABLED
+        if (esper.player.level < concept.levelRequirement) return TestResult.FAILED_LEVEL
         if (cooldownTicks > 0L) return TestResult.FAILED_COOLDOWN
         if (psychic.mana < concept.cost) return TestResult.FAILED_COST
 
@@ -176,7 +176,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
                 target = targeter.invoke() ?: return TestResult.FAILED_TARGET
             }
 
-            return if (psychic.consumeMana(cost)) {
+            return if (psychic.mana >= concept.cost) {
                 cast(castingTicks, target)
                 TestResult.SUCCESS
             } else {
