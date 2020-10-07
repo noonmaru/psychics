@@ -24,6 +24,7 @@ import com.github.noonmaru.psychics.AbilityDescription
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
+import kotlin.jvm.Throws
 
 class AbilityLoader internal constructor() {
     private val classes: MutableMap<String, Class<*>?> = ConcurrentHashMap()

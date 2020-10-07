@@ -21,6 +21,8 @@ import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
+import kotlin.jvm.Throws
+
 internal class AbilityClassLoader(
     private val loader: AbilityLoader,
     file: File,
