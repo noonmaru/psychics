@@ -9,7 +9,7 @@
 ---
 
 ### 사용법 및 개발 문서
-* [**WIKI**](https://github.com/noonmaru/psychics/wiki)
+* [**Wiki**](https://github.com/noonmaru/psychics/wiki)
 ---
 ### Compile
 * **./gradlew build**
