@@ -235,7 +235,7 @@ open class AbilityConcept {
     }
 
     internal fun createAbilityInstance(): Ability<*> {
-        return container.abilityClass.newInstance().apply {
+        return container.abilityClass.getDeclaredConstructor().newInstance().apply {
             initConcept(this@AbilityConcept)
         }
     }

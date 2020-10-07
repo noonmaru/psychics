@@ -51,7 +51,7 @@ subprojects {
         testImplementation("org.slf4j:slf4j-api:1.7.25")
         testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
         testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
-        testImplementation("org.spigotmc:spigot:1.16.3-R0.1-SNAPSHOT")
+        testImplementation("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
     }
 
     tasks {

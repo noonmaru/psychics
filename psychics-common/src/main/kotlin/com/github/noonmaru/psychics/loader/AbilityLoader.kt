@@ -88,7 +88,7 @@ class AbilityLoader internal constructor() {
 
 private fun <T> testCreateInstance(clazz: Class<T>): T {
     try {
-        return clazz.newInstance()
+        return clazz.getDeclaredConstructor().newInstance()
     } catch (e: Exception) {
         error("Failed to create instance ${clazz.name}")
     }

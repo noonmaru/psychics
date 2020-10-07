@@ -211,7 +211,7 @@ class PsychicManager(
                     if (containers.count() > 1) error("Ambiguous Ability ${containers.joinToString { it.description.artifactId }}")
 
                     val abilityContainer = containers.first()
-                    val abilityConcept = abilityContainer.conceptClass.newInstance()
+                    val abilityConcept = abilityContainer.conceptClass.getDeclaredConstructor().newInstance()
                     changed = changed or abilityConcept.initialize(abilityName, abilityContainer, psychicConcept, value)
                     abilityConcepts += abilityConcept
                 }
