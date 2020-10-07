@@ -14,3 +14,8 @@
 ### Compile
 * **./gradlew build**
   * Plugin = `./psychics-common/build/libs/Psychics.jar`
+---
+
+### 샘플 초능력
+* https://github.com/noonmaru/psychics-abilities
+
