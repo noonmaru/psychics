@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.zipTo
+
 subprojects {
     if (version == "unspecified") version = parent!!.version
 
@@ -27,3 +29,7 @@ subprojects {
 }
 
 tasks.filter { it.name != "clean" }.forEach { it.enabled = false }
+
+gradle.buildFinished {
+    zipTo(File(buildDir, "abilities.zip"), File(buildDir, "libs"))
+}

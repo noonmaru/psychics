@@ -85,6 +85,28 @@ subprojects {
         assemble {
             dependsOn(shadowJar)
         }
+        create<de.undercouch.gradle.tasks.download.Download>("downloadBuildTools") {
+            src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
+            dest(".buildtools/BuildTools.jar")
+        }
+        create<DefaultTask>("setupWorkspace") {
+            doLast {
+                for (v in listOf("1.16.3")) {
+                    javaexec {
+                        workingDir(".buildtools/")
+                        main = "-jar"
+                        args = listOf(
+                            "./BuildTools.jar",
+                            "--rev",
+                            v
+                        )
+                    }
+                }
+                File(".buildtools/").deleteRecursively()
+            }
+
+            dependsOn(named("downloadBuildTools"))
+        }
     }
 }
 
