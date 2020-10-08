@@ -41,7 +41,7 @@ subprojects {
         compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
         compileOnly("com.github.noonmaru:invfx:1.3.0")
 
-        implementationOnlyCommon("com.github.noonmaru:tap:3.1.7")
+        implementationOnlyCommon("com.github.noonmaru:tap:3.1.8")
         implementationOnlyCommon("com.github.noonmaru:kommand:0.5.0")
 
         testImplementation("junit:junit:4.13")
