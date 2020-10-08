@@ -31,5 +31,8 @@ subprojects {
 tasks.filter { it.name != "clean" }.forEach { it.enabled = false }
 
 gradle.buildFinished {
-    zipTo(File(buildDir, "abilities.zip"), File(buildDir, "libs"))
+    val libs = File(buildDir, "libs")
+
+    if (libs.exists())
+        zipTo(File(buildDir, "abilities.zip"), libs)
 }
