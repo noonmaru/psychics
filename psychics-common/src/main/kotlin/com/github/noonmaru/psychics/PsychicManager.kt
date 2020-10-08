@@ -50,13 +50,27 @@ class PsychicManager(
 
     val espers: Collection<Esper> = Collections.unmodifiableCollection(espersByPlayer.values)
 
+    internal fun reload() {
+        espers.forEach { esper ->
+            esper.save()
+            esper.removePsychic()
+        }
+        abilityLoader.clear()
+
+        updateAbilities()
+        loadAbilities()
+        loadPsychics()
+
+        espers.forEach { it.load() }
+    }
+
     internal fun unload() {
         for (esper in espers) {
             esper.save()
             esper.clear()
         }
         espersByPlayer.clear()
-        abilityLoader.unloadAll()
+        abilityLoader.clear()
     }
 
     fun getEsper(player: Player): Esper? {

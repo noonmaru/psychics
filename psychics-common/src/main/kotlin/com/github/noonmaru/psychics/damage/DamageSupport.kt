@@ -216,6 +216,7 @@ private fun LivingEntity.psychicDamageActual(
     if (this is Mob && target == null)
         target = damager
 
+    noDamageTicks = 0
     damage(actualDamage)
 
     return actualDamage

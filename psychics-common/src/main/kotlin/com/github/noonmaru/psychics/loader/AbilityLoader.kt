@@ -77,7 +77,7 @@ class AbilityLoader internal constructor() {
         throw ClassNotFoundException(name)
     }
 
-    fun unloadAll() {
+    fun clear() {
         classes.clear()
         classLoaders.run {
             values.forEach(AbilityClassLoader::close)

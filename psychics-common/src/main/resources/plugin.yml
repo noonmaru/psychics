@@ -9,3 +9,6 @@ commands:
     aliases: [ 'psy' ]
     usage: /<command> help
     permission: 'psychics.commands'
+permissions:
+  psychics.reload:
+    default: op

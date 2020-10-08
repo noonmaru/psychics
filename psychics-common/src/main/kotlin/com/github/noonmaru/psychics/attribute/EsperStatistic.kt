@@ -20,7 +20,6 @@ package com.github.noonmaru.psychics.attribute
 import com.github.noonmaru.psychics.format.decimalFormat
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.configuration.serialization.ConfigurationSerializable
-import org.bukkit.configuration.serialization.ConfigurationSerialization
 import java.util.*
 
 class EsperStatistic internal constructor(pairs: List<Pair<EsperAttribute, Double>>) : ConfigurationSerializable {
@@ -53,9 +52,6 @@ class EsperStatistic internal constructor(pairs: List<Pair<EsperAttribute, Doubl
     }
 
     companion object {
-        init {
-            ConfigurationSerialization.registerClass(EsperStatistic::class.java)
-        }
 
         @JvmStatic
         fun deserialize(map: Map<String, *>): EsperStatistic {

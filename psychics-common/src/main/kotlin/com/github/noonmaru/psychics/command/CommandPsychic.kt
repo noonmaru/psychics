@@ -22,6 +22,7 @@ import com.github.noonmaru.kommand.KommandBuilder
 import com.github.noonmaru.kommand.KommandContext
 import com.github.noonmaru.kommand.argument.KommandArgument
 import com.github.noonmaru.kommand.argument.player
+import com.github.noonmaru.kommand.argument.playerTarget
 import com.github.noonmaru.kommand.argument.suggestions
 import com.github.noonmaru.kommand.sendFeedback
 import com.github.noonmaru.psychics.AbilityConcept
@@ -32,6 +33,8 @@ import com.github.noonmaru.psychics.invfx.InvPsychic
 import com.github.noonmaru.psychics.item.addItemNonDuplicate
 import com.github.noonmaru.psychics.plugin.PsychicPlugin
 import com.github.noonmaru.tap.util.updateFromGitHubMagically
+import net.md_5.bungee.api.ChatColor
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -52,10 +55,10 @@ internal object CommandPsychic {
                 }
             }
             then("attach") {
-                then("player" to player()) {
+                then("players" to playerTarget()) {
                     then("psychic" to PsychicConceptArgument) {
                         executes {
-                            attach(it.sender, it.parseArgument("player"), it.parseArgument("psychic"))
+                            attach(it.sender, it.parseArgument("players"), it.parseArgument("psychic"))
                         }
                     }
                 }
@@ -93,6 +96,12 @@ internal object CommandPsychic {
                     }
                 }
             }
+            then("reload") {
+                executes {
+                    plugin.reloadPsychics()
+                    Bukkit.broadcast("${ChatColor.GREEN}Psychics reload complete.", "psychics.reload")
+                }
+            }
         }
     }
 
@@ -100,9 +109,11 @@ internal object CommandPsychic {
         sender.openWindow(InvPsychic.create(psychicConcept, sender.esper::getStatistic))
     }
 
-    private fun attach(sender: CommandSender, player: Player, psychicConcept: PsychicConcept) {
-        requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).isEnabled = true
-        sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
+    private fun attach(sender: CommandSender, players: List<Player>, psychicConcept: PsychicConcept) {
+        for (player in players) {
+            requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).isEnabled = true
+            sender.sendFeedback("${player.name}'s ability = ${psychicConcept.name}")
+        }
     }
 
     private fun detach(sender: CommandSender, player: Player) {

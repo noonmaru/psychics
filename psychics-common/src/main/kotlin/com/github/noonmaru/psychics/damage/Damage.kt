@@ -19,6 +19,7 @@ package com.github.noonmaru.psychics.damage
 
 import com.github.noonmaru.psychics.attribute.EsperStatistic
 import net.md_5.bungee.api.ChatColor
+import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.serialization.ConfigurationSerializable
 
 class Damage(
@@ -41,9 +42,12 @@ class Damage(
         private const val STATS = "stats"
 
         @Suppress("UNCHECKED_CAST")
+        @JvmStatic
         fun deserialize(map: Map<String, *>): Damage {
             val type = DamageType.valueOf(requireNotNull(map[TYPE]) as String)
-            val stats = EsperStatistic.deserialize(requireNotNull(map[STATS]) as Map<String, *>)
+
+            val statsValue = requireNotNull((map[STATS] as ConfigurationSection).getValues(false))
+            val stats = EsperStatistic.deserialize(statsValue)
 
             return Damage(type, stats)
         }

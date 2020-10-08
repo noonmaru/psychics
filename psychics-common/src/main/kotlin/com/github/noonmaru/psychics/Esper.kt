@@ -94,7 +94,7 @@ class Esper(
         return setPsychic(concept)
     }
 
-    private fun removePsychic() {
+    internal fun removePsychic() {
         psychic?.let { psychic ->
             this.psychic = null
             psychic.destroy()

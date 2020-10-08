@@ -20,9 +20,12 @@ package com.github.noonmaru.psychics.plugin
 import com.github.noonmaru.kommand.kommand
 import com.github.noonmaru.psychics.PsychicManager
 import com.github.noonmaru.psychics.Psychics
+import com.github.noonmaru.psychics.attribute.EsperStatistic
 import com.github.noonmaru.psychics.command.CommandPsychic
+import com.github.noonmaru.psychics.damage.Damage
 import com.github.noonmaru.tap.event.EntityEventManager
 import com.github.noonmaru.tap.fake.FakeEntityServer
+import org.bukkit.configuration.serialization.ConfigurationSerialization
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -39,6 +42,11 @@ class PsychicPlugin : JavaPlugin() {
 
     lateinit var psychicManager: PsychicManager
         private set
+
+    override fun onLoad() {
+        ConfigurationSerialization.registerClass(Damage::class.java)
+        ConfigurationSerialization.registerClass(EsperStatistic::class.java)
+    }
 
     override fun onEnable() {
         loadModules()
@@ -98,5 +106,11 @@ class PsychicPlugin : JavaPlugin() {
         if (this::fakeEntityServer.isInitialized) {
             fakeEntityServer.clear()
         }
+    }
+
+    fun reloadPsychics() {
+        fakeEntityServer.entities.forEach { it.remove() }
+        entityEventManager.unregisterAll()
+        psychicManager.reload()
     }
 }
