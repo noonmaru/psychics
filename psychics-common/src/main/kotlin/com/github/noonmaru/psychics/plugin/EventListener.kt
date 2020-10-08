@@ -65,7 +65,11 @@ class EventListener(
 
         if (action != Action.PHYSICAL && hand == EquipmentSlot.HAND && item != null) {
             val player = event.player
-            player.esper.psychic?.castByWand(item)
+            val wandAction =
+                if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) ActiveAbility.WandAction.LEFT_CLICK
+                else ActiveAbility.WandAction.RIGHT_CLICK
+
+            player.esper.psychic?.castByWand(event, wandAction, item)
         }
     }
 
@@ -75,7 +79,7 @@ class EventListener(
         val item = player.inventory.itemInMainHand
 
         if (item.type != Material.AIR) {
-            player.esper.psychic?.castByWand(item)
+            player.esper.psychic?.castByWand(event, ActiveAbility.WandAction.RIGHT_CLICK, item)
         }
     }
 
@@ -125,12 +129,12 @@ class EventListener(
         get() = requireNotNull(psychicManager.getEsper(this))
 }
 
-private fun Psychic.castByWand(item: ItemStack) {
+private fun Psychic.castByWand(event: PlayerEvent, action: ActiveAbility.WandAction, item: ItemStack) {
     esper.psychic?.let { psychic ->
         val ability = psychic.getAbilityByWand(item)
 
         if (ability is ActiveAbility) {
-            val result = ability.tryCast()
+            val result = ability.tryCast(event, action)
 
             if (result !== TestResult.SUCCESS) {
                 esper.player.sendActionBar(result.getMessage(ability))

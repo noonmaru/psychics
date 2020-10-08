@@ -25,6 +25,7 @@ import org.bukkit.Sound
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
+import org.bukkit.event.player.PlayerEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import org.bukkit.util.Vector
@@ -125,14 +126,20 @@ class AbilityBoomerang : ActiveAbility<AbilityBoomerangConcept>() {
         boomerangs = ImmutableList.of()
     }
 
-    override fun tryCast(castingTicks: Long, cost: Double, targeter: (() -> Any?)?): TestResult {
+    override fun tryCast(
+        event: PlayerEvent,
+        action: WandAction,
+        castingTicks: Long,
+        cost: Double,
+        targeter: (() -> Any?)?
+    ): TestResult {
         if (boomerangs.find { it.vehicle == null } == null)
             return TestResult.create("남아있는 부메랑이 없습니다.")
 
-        return super.tryCast(castingTicks, cost, targeter)
+        return super.tryCast(event, action, castingTicks, cost, targeter)
     }
 
-    override fun onCast(target: Any?) {
+    override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         val availableBoomerang = boomerangs.find { it.vehicle == null } ?: return
 
         cooldownTicks = concept.cooldownTicks

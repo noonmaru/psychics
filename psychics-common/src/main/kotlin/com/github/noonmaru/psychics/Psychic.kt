@@ -37,6 +37,7 @@ import org.bukkit.boss.BossBar
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Entity
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
 import kotlin.math.max
@@ -403,10 +404,16 @@ class Psychic internal constructor(
         return false
     }
 
-    internal fun startChannel(ability: ActiveAbility<*>, castingTicks: Long, target: Any?) {
+    internal fun startChannel(
+        ability: ActiveAbility<*>,
+        event: PlayerEvent,
+        wandAction: ActiveAbility.WandAction,
+        castingTicks: Long,
+        target: Any?
+    ) {
         interruptChannel()
 
-        channeling = Channel(ability, castingTicks, target)
+        channeling = Channel(ability, event, wandAction, castingTicks, target)
         castingBar.apply {
             val abilityConcept = ability.concept
             setTitle("${ChatColor.BOLD}${concept.displayName}")
@@ -500,7 +507,13 @@ class Psychic internal constructor(
 /**
  * 시전중인 스킬정보를 담고있는 클래스입니다.
  */
-class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: Long, val target: Any? = null) {
+class Channel internal constructor(
+    val ability: ActiveAbility<*>,
+    val event: PlayerEvent,
+    val action: ActiveAbility.WandAction,
+    castingTicks: Long,
+    val target: Any? = null
+) {
     private val channelTick = Tick.currentTicks + castingTicks
 
     /**
@@ -510,14 +523,14 @@ class Channel internal constructor(val ability: ActiveAbility<*>, castingTicks: 
         get() = max(0, channelTick - Tick.currentTicks)
 
     internal fun channel() {
-        ability.runCatching { onChannel(remainingTicks, target) }.onFailure(Throwable::printStackTrace)
+        ability.runCatching { onChannel(this@Channel) }.onFailure(Throwable::printStackTrace)
     }
 
     internal fun cast() {
-        ability.runCatching { onCast(target) }.onFailure(Throwable::printStackTrace)
+        ability.runCatching { onCast(event, action, target) }.onFailure(Throwable::printStackTrace)
     }
 
     internal fun interrupt() {
-        ability.runCatching { onInterrupt(target) }.onFailure(Throwable::printStackTrace)
+        ability.runCatching { onInterrupt(this@Channel) }.onFailure(Throwable::printStackTrace)
     }
 }

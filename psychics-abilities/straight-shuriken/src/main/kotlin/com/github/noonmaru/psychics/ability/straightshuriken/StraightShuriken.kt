@@ -1,9 +1,6 @@
 package com.github.noonmaru.psychics.ability.straightshuriken
 
-import com.github.noonmaru.psychics.AbilityConcept
-import com.github.noonmaru.psychics.ActiveAbility
-import com.github.noonmaru.psychics.PsychicProjectile
-import com.github.noonmaru.psychics.TestResult
+import com.github.noonmaru.psychics.*
 import com.github.noonmaru.psychics.attribute.EsperAttribute
 import com.github.noonmaru.psychics.attribute.EsperStatistic
 import com.github.noonmaru.psychics.damage.Damage
@@ -22,6 +19,7 @@ import com.github.noonmaru.tap.trail.trail
 import org.bukkit.*
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.LivingEntity
+import org.bukkit.event.player.PlayerEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.EulerAngle
@@ -73,8 +71,14 @@ class StraightShuriken : ActiveAbility<StraightShurikenConcept>() {
 
     private var shuriken: Shuriken? = null
 
-    override fun tryCast(castingTicks: Long, cost: Double, targeter: (() -> Any?)?): TestResult {
-        val ret = super.tryCast(castingTicks, cost, targeter)
+    override fun tryCast(
+        event: PlayerEvent,
+        action: WandAction,
+        castingTicks: Long,
+        cost: Double,
+        targeter: (() -> Any?)?
+    ): TestResult {
+        val ret = super.tryCast(event, action, castingTicks, cost, targeter)
 
         if (ret == TestResult.SUCCESS) {
             shuriken = Shuriken(esper.player.eyeLocation)
@@ -83,18 +87,18 @@ class StraightShuriken : ActiveAbility<StraightShurikenConcept>() {
         return ret
     }
 
-    override fun onChannel(remainingTicks: Long, target: Any?) {
+    override fun onChannel(channel: Channel) {
         shuriken?.run {
             rotate()
-            updateLocation(if (remainingTicks > concept.castingTicks - 3) -60.0 else 0.0)
+            updateLocation(if (channel.remainingTicks > concept.castingTicks - 3) -60.0 else 0.0)
         }
     }
 
-    override fun onInterrupt(target: Any?) {
+    override fun onInterrupt(channel: Channel) {
         shuriken?.remove()
     }
 
-    override fun onCast(target: Any?) {
+    override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         shuriken?.let { shuriken ->
             val projectile = ShurikenProjectile(shuriken)
             psychic.launchProjectile(shuriken.location, projectile)

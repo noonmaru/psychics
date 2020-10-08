@@ -26,6 +26,7 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.Location
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.LivingEntity
+import org.bukkit.event.player.PlayerEvent
 import kotlin.math.max
 
 abstract class Ability<T : AbilityConcept> {
@@ -163,6 +164,8 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     }
 
     open fun tryCast(
+        event: PlayerEvent,
+        action: WandAction,
         castingTicks: Long = concept.castingTicks,
         cost: Double = concept.cost,
         targeter: (() -> Any?)? = this.targeter
@@ -177,7 +180,7 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
             }
 
             return if (psychic.mana >= concept.cost) {
-                cast(castingTicks, target)
+                cast(event, action, castingTicks, target)
                 TestResult.SUCCESS
             } else {
                 TestResult.FAILED_COST
@@ -187,21 +190,31 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
         return result
     }
 
-    protected fun cast(castingTicks: Long, target: Any? = null) {
+    protected fun cast(
+        event: PlayerEvent,
+        action: WandAction,
+        castingTicks: Long,
+        target: Any? = null
+    ) {
         checkState()
 
         if (castingTicks > 0) {
-            psychic.startChannel(this, castingTicks, target)
+            psychic.startChannel(this, event, action, castingTicks, target)
         } else {
-            onCast(target)
+            onCast(event, action, target)
         }
     }
 
-    abstract fun onCast(target: Any?)
+    abstract fun onCast(event: PlayerEvent, action: WandAction, target: Any?)
 
-    open fun onChannel(remainingTicks: Long, target: Any?) {}
+    open fun onChannel(channel: Channel) {}
 
-    open fun onInterrupt(target: Any?) {}
+    open fun onInterrupt(channel: Channel) {}
+
+    enum class WandAction {
+        LEFT_CLICK,
+        RIGHT_CLICK
+    }
 }
 
 fun Ability<*>.targetFilter(): TargetFilter {
