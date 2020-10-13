@@ -14,3 +14,11 @@
 ### Compile
 * **./gradlew build**
   * Plugin = `./psychics-common/build/libs/Psychics.jar`
+  * Ability = `./psychics-abilities/build/libs/GroupName.AbilityName.jar`
+  
+### Dependency plugin
+  * Tap = `[Tap Release](https://github.com/noonmaru/tap/releases)`
+  * InvFx = `[InvFx Release](https://github.com/noonmaru/invfx/releases)`
+  * Kotlin Plugin = `[Kotlin Plugin Release](https://github.com/noonmaru/kotlin-plugin/releases)`
+  * ProtocolLib = `[ProtocolLib LastSucessful Build](https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar)`
+  * 위 의존성 플러그인을 설치하신 후 PaperMC 1.16.3 서버에서 플러그인을 넣고 구동하세요.
