@@ -37,11 +37,11 @@ subprojects {
         compileOnly(kotlin("stdlib-jdk8"))
         compileOnly(kotlin("reflect"))
         compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
-        compileOnly("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
+        compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
         compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
         compileOnly("com.github.noonmaru:invfx:1.3.0")
 
-        implementationOnlyCommon("com.github.noonmaru:tap:3.2.3")
+        implementationOnlyCommon("com.github.noonmaru:tap:3.2.5")
         implementationOnlyCommon("com.github.noonmaru:kommand:0.6.3")
 
         testImplementation("junit:junit:4.13")

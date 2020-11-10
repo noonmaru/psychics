@@ -2,7 +2,7 @@ FROM itzg/minecraft-server
 
 ENV EULA=true
 ENV TYPE=PAPER
-ENV VERSION=1.16.3
+ENV VERSION=1.16.4
 ENV CONSOLE=false
 ENV TZ=Asia/Seoul
 
