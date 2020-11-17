@@ -14,7 +14,6 @@ services:
     entrypoint:
       - /docker-setup-plugin
       - https://github.com/noonmaru/kotlin-plugin/releases/latest/download/Kotlin.jar
-      - https://github.com/noonmaru/auto-reloader/releases/latest/download/InvFX.jar
-      - https://github.com/noonmaru/auto-reloader/releases/latest/download/AutoReloader.jar
       - https://github.com/noonmaru/invfx/releases/latest/download/InvFX.jar
+      - https://github.com/noonmaru/auto-reloader/releases/latest/download/AutoReloader.jar
       - https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar
