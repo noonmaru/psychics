@@ -10,7 +10,7 @@ branches:
 before_install:
   - wget https://raw.githubusercontent.com/noonmaru/travis-ci-buildtools/master/buildtools.sh
   - chmod +x buildtools.sh
-  - ./buildtools.sh 1.16.3
+  - ./buildtools.sh 1.16.4
   - chmod +x ./gradlew
 
 cache:
