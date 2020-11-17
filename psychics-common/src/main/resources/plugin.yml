@@ -1,7 +1,7 @@
 name: $pluginName
 main: $pluginMain
 depend: [ Kotlin, InvFX, ProtocolLib ]
-api-version: '1.16'
+api-version: '1.13'
 version: $version
 author: $author
 commands:
