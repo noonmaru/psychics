@@ -151,7 +151,7 @@ class Psychic internal constructor(
     }
 
     internal fun attach(esper: Esper) {
-        require(!this::esperRef.isInitialized) { "Cannot redefine epser" }
+        require(!this::esperRef.isInitialized) { "Cannot redefine esper" }
 
         val player = esper.player
 
