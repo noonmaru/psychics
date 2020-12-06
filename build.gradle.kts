@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.4.20"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     `maven-publish`
 }
@@ -51,7 +51,7 @@ subprojects {
         testImplementation("org.slf4j:slf4j-api:1.7.25")
         testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
         testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
-        testImplementation("org.spigotmc:spigot:1.16.3-R0.1-SNAPSHOT")
+        testImplementation("org.spigotmc:spigot:1.16.4-R0.1-SNAPSHOT")
     }
 
     tasks {
@@ -99,7 +99,7 @@ tasks {
     }
     create<DefaultTask>("setupWorkspace") {
         doLast {
-            for (v in listOf("1.16.3")) {
+            for (v in listOf("1.16.4")) {
                 javaexec {
                     workingDir(".buildtools/")
                     main = "-jar"
