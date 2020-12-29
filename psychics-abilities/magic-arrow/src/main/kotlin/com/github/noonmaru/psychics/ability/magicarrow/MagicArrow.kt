@@ -18,7 +18,6 @@ import com.github.noonmaru.tap.config.RangeDouble
 import com.github.noonmaru.tap.config.RangeLong
 import com.github.noonmaru.tap.effect.playFirework
 import com.github.noonmaru.tap.trail.trail
-import net.md_5.bungee.api.ChatColor
 import org.bukkit.*
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.LivingEntity
