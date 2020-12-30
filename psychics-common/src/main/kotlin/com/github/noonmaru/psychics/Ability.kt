@@ -217,6 +217,10 @@ abstract class ActiveAbility<T : AbilityConcept> : Ability<T>() {
     }
 }
 
+abstract class CounterAbility<T : AbilityConcept> : Ability<T>() {
+    abstract fun onAttacked(opponent: Esper, usedAbility: Ability<*>, tookDamage: Damage)
+}
+
 fun Ability<*>.targetFilter(): TargetFilter {
     return TargetFilter(esper.player)
 }
