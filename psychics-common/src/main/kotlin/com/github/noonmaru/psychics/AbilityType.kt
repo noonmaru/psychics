@@ -25,7 +25,8 @@ enum class AbilityType(
 ) {
     PASSIVE(ChatColor.AQUA),
     ACTIVE(ChatColor.RED),
-    TOGGLE(ChatColor.YELLOW);
+    TOGGLE(ChatColor.YELLOW),
+    COUNTER(ChatColor.LIGHT_PURPLE);
 
     override fun toString(): String {
         return "$color$name"
