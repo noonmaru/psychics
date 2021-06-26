@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.4.10"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    kotlin("jvm") version "1.5.10"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     `maven-publish`
 }
 
@@ -9,6 +9,7 @@ val relocate = (findProperty("relocate") as? String)?.toBoolean() ?: true
 allprojects {
     repositories {
         mavenCentral()
+        mavenLocal()
     }
 }
 
@@ -37,8 +38,8 @@ subprojects {
         compileOnly(kotlin("stdlib-jdk8"))
         compileOnly(kotlin("reflect"))
         compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
-        compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
-        compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
+        compileOnly("com.destroystoyko.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
+        compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0-SNAPSHOT")
         compileOnly("com.github.noonmaru:invfx:1.3.0")
 
         implementationOnlyCommon("com.github.noonmaru:tap:3.2.5")
@@ -99,7 +100,7 @@ tasks {
     }
     create<DefaultTask>("setupWorkspace") {
         doLast {
-            for (v in listOf("1.16.3")) {
+            for (v in listOf("1.16.5")) {
                 javaexec {
                     workingDir(".buildtools/")
                     main = "-jar"
